@@ -5,7 +5,6 @@ from dateutil.parser import parse
 import pandas as pd
 import sys
 from src import multi_thread
-from multiprocessing import Pool
 
 db = redis.Redis(host='localhost', port=6379, db=0)
 
