@@ -1,3 +1,4 @@
+import xml.etree.ElementTree as ET
 import redis
 import csv
 from dateutil.parser import parse
@@ -57,7 +58,7 @@ if start < 4:
             db.hset(row[0], "creationDate", parse(row[5]).timestamp())
             db.hset(row[0], "locationIP", row[6])
             db.hset(row[0], "browserUsed", row[7])
-            db.hset(row[0], "place", int(row[8]))
+            db.hset(row[0], "place", float(row[8]))
 
 if start < 5:
     print("5.Vendor...")
@@ -86,3 +87,76 @@ if start < 6:
         for product in row["Orderline"]:
             asins.append(product["asin"])
         db.rpush(f"{OrderId}_Orderline", *asins)
+
+
+if start < 7:
+    print("7.Invoice...")
+    tree = ET.parse(open("./DATA/Invoice/Invoice.xml", "r"))
+    for invoice in tree.findall('Invoice.xml'):
+        OrderId = invoice.find("OrderId").text
+        db.hset(OrderId, "PersonId",
+                invoice.find("PersonId").text)
+        db.hset(OrderId, "OrderDate", invoice.find("OrderDate").text)
+        db.hset(OrderId, "TotalPrice",
+                float(invoice.find("TotalPrice").text))
+
+        asins = []
+        for Orderline in invoice.findall("Orderline"):
+            asins.append(Orderline.find("asin").text)
+        db.rpush(f"{OrderId}_Orderline", *asins)
+
+if start < 8:
+    print("8.person_hasInterest_tag_0_0.csv...")
+    with open("./DATA/SocialNetwork/person_hasInterest_tag_0_0.csv", "r") as f:
+        next(f)
+        reader = csv.reader(f, quotechar='"', delimiter='|',
+                            quoting=csv.QUOTE_ALL, skipinitialspace=True)
+        for row in reader:
+            # Person.id | Tag.id
+            db.rpush(f"{row[0]}_Tags", row[1])
+
+if start < 9:
+    print("9.person_knows_person_0_0...")
+    with open("./DATA/SocialNetwork/person_knows_person_0_0.csv", "r") as f:
+        next(f)
+        reader = csv.reader(f, quotechar='"', delimiter='|',
+                            quoting=csv.QUOTE_ALL, skipinitialspace=True)
+        for row in reader:
+            # Person.id | Person.id | creationDate
+            db.rpush(f"{row[0]}_Knows", row[1])
+
+if start < 10:
+    print("10.post_0_0...")
+    with open("./DATA/SocialNetwork/post_0_0", "r") as f:
+        next(f)
+        reader = csv.reader(f, quotechar='"', delimiter='|',
+                            quoting=csv.QUOTE_ALL, skipinitialspace=True)
+        for row in reader:
+            # id | imageFile | creationDate | locationIP | browserUsed | language | content | length
+            db.hset(row[0], "imageFile", row[1])
+            db.hset(row[0], "creationDate", parse(row[2]).timestamp())
+            db.hset(row[0], "locationIP", row[3])
+            db.hset(row[0], "browserUsed", row[4])
+            db.hset(row[0], "language", row[5])
+            db.hset(row[0], "content", row[6])
+            db.hset(row[0], "length", float(row[7]))
+
+if start < 11:
+    print("11.post_hasCreator_person_0_0...")
+    with open("./DATA/SocialNetwork/post_hasCreator_person_0_0.csv", "r") as f:
+        next(f)
+        reader = csv.reader(f, quotechar='"', delimiter='|',
+                            quoting=csv.QUOTE_ALL, skipinitialspace=True)
+        for row in reader:
+            # Post.id | Person.id
+            db.rpush(f"{row[1]}_Posts", row[0])
+
+if start < 12:
+    print("12.post_hasTag_tag_0_0...")
+    with open("./DATA/SocialNetwork/post_hasTag_tag_0_0.csv", "r") as f:
+        next(f)
+        reader = csv.reader(f, quotechar='"', delimiter='|',
+                            quoting=csv.QUOTE_ALL, skipinitialspace=True)
+        for row in reader:
+            # Post.id | Tag.id
+            db.rpush(f"{row[0]}_Tags", row[1])
