@@ -6,10 +6,11 @@ import sys
 
 db = redis.Redis(host='localhost', port=6379, db=0)
 
-db.flushdb()
-db.flushall()
-
 start = int(sys.argv[1]) if len(sys.argv) == 2 else 0
+
+if start == 0:
+    db.flushdb()
+    db.flushall()
 
 if start < 1:
     print("1.Feedback...")
@@ -74,6 +75,8 @@ if start < 6:
     df = pd.read_json('./DATA/Order/Order.json', lines=True)
     for index, row in df.iterrows():
         OrderId = row["OrderId"]
+        PersonId = row["PersonId"]
+        db.rpush(f"{PersonId}_Orders", OrderId)
         db.hset(OrderId, "PersonId", row["PersonId"])
         # On peut pas faire parse(row["OrderDate"]).timestamp() car il y a des 29 fevriers...
         db.hset(OrderId, "OrderDate", row["OrderDate"])
