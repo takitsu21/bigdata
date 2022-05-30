@@ -172,7 +172,6 @@ fs = [
     lambda : Order(),
     lambda : Invoice(),
     lambda : person_hasInterest_tag_0_0(),
-    lambda : post_hasCreator_person_0_0(),
     lambda : person_knows_person_0_0(),
     lambda : post_0_0(),
     lambda : post_hasCreator_person_0_0(),
