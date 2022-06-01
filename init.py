@@ -47,6 +47,7 @@ if start < 4:
     print("4.Customer...")
     with open("./DATA/Customer/person_0_0.csv", "r") as f:
         next(f)
+        Customers = []
         reader = csv.reader(f, quotechar='"', delimiter='|',
                             quoting=csv.QUOTE_ALL, skipinitialspace=True)
         for row in reader:
@@ -59,6 +60,8 @@ if start < 4:
             db.hset(row[0], "locationIP", row[6])
             db.hset(row[0], "browserUsed", row[7])
             db.hset(row[0], "place", float(row[8]))
+            Customers.append(row[0])
+        db.rpush("Customers", *Customers)
 
 if start < 5:
     print("5.Vendor...")
@@ -74,6 +77,7 @@ if start < 5:
 if start < 6:
     print("6.Order...")
     df = pd.read_json('./DATA/Order/Order.json', lines=True)
+    Orders = []
     for index, row in df.iterrows():
         OrderId = row["OrderId"]
         PersonId = row["PersonId"]
@@ -87,6 +91,8 @@ if start < 6:
         for product in row["Orderline"]:
             asins.append(product["asin"])
         db.rpush(f"{OrderId}_Orderline", *asins)
+        Orders.append(OrderId)
+    db.rpush("Orders", *Orders)
 
 
 if start < 7:
