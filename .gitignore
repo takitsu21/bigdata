@@ -26,6 +26,19 @@ hs_err_pid*
 projet/target/
 __pycache__/
 
-DATA
 
 .vscode/*
+DATA/Readme.pdf
+DATA/Customer/person_0_0.csv
+DATA/Feedback/Feedback.csv
+DATA/Invoice/Invoice.xml
+DATA/Invoice/xml.dtd
+DATA/Order/Order.json
+DATA/Product/BrandByProduct.csv
+DATA/Product/Product.csv
+DATA/SocialNetwork/person_hasInterest_tag_0_0.csv
+DATA/SocialNetwork/person_knows_person_0_0.csv
+DATA/SocialNetwork/post_0_0.csv
+DATA/SocialNetwork/post_hasCreator_person_0_0.csv
+DATA/SocialNetwork/post_hasTag_tag_0_0.csv
+DATA/Vendor/Vendor.csv
