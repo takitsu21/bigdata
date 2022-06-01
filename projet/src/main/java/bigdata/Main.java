@@ -1,6 +1,5 @@
 package bigdata;
 
-import org.jboss.marshalling.Pair;
 import org.redisson.Redisson;
 import org.redisson.api.RList;
 import org.redisson.api.RMap;
@@ -12,9 +11,11 @@ import org.redisson.client.codec.DoubleCodec;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-
 
 public class Main {
     public static void main(String[] args) {
@@ -37,7 +38,8 @@ public class Main {
             }
             System.out.println("--------------------------");
 
-            List<Object> query4 = Main.Query4(redisson,query); // j'ai mit query en attendant de pouvoir avoir toute la collection
+            List<Object> query4 = Main.Query4(redisson, query); // j'ai mit query en attendant de pouvoir avoir toute la
+                                                                // collection
             System.out.println("Query n°4 Ended:\n--------------------------");
 
             for (Object people : query4) {
@@ -88,46 +90,46 @@ public class Main {
         return query;
     }
 
-
     /**
-     * Query 4. Find the top-2 persons who spend the highest amount of money in orders.
-     * Then for each person, traverse her knows-graph with 3-hop to find the friends,
+     * Query 4. Find the top-2 persons who spend the highest amount of money in
+     * orders.
+     * Then for each person, traverse her knows-graph with 3-hop to find the
+     * friends,
      * and finally return the common friends of these two persons.
      *
      * @param redisson
      * @return
      * @throws ParseException
      */
-    public static List<Object> Query4(RedissonClient redisson, List<String> persons){
+    public static List<Object> Query4(RedissonClient redisson, List<String> persons) {
         String person1 = "";
         String person2 = "";
         double pricePerson1 = 0;
-        double pricePerson2=0;
+        double pricePerson2 = 0;
 
         StringCodec codec = new StringCodec();
         DoubleCodec codecPrice = new DoubleCodec();
         for (String personID : persons) {
-            RList<String> ordersID = redisson.getList(personID+"_Orders", codec);
-            double sum=0;
-            for(String orderID : ordersID) {
+            RList<String> ordersID = redisson.getList(personID + "_Orders", codec);
+            double sum = 0;
+            for (String orderID : ordersID) {
                 Double totalPrice = (Double) redisson.getMap(orderID, codecPrice).get("TotalPrice");
-                sum+=totalPrice;
+                sum += totalPrice;
             }
-            if (sum>pricePerson1){
-                person2=person1;
-                pricePerson2=pricePerson1;
-                person1=personID;
-                pricePerson1=sum;
-            }
-            else if (sum>pricePerson2){
-                person2=personID;
+            if (sum > pricePerson1) {
+                person2 = person1;
+                pricePerson2 = pricePerson1;
+                person1 = personID;
+                pricePerson1 = sum;
+            } else if (sum > pricePerson2) {
+                person2 = personID;
                 pricePerson2 = sum;
             }
 
         }
 
-        RList<String> know1 = redisson.getList(person1 +"_Knows", codec);
-        RList<String> know2 = redisson.getList(person2+"_Knows", codec);
+        RList<String> know1 = redisson.getList(person1 + "_Knows", codec);
+        RList<String> know2 = redisson.getList(person2 + "_Knows", codec);
 
         return know1.stream()
                 .distinct()
@@ -135,5 +137,3 @@ public class Main {
                 .collect(Collectors.toList());
     }
 }
-
-
