@@ -133,7 +133,7 @@ if start < 9:
 
 if start < 10:
     print("10.post_0_0...")
-    for chunk in pd.read_csv("./DATA/SocialNetwork/post_0_0.csv", sep="|", chunksize=20000):
+    for chunk in pd.read_csv("./DATA/SocialNetwork/post_0_0", sep="|", chunksize=20000):
         for index, row in chunk.iterrows():
             # id | imageFile | creationDate | locationIP | browserUsed | language | content | length
             db.hset(row[0], "imageFile", row[1])
