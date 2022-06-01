@@ -25,3 +25,7 @@ hs_err_pid*
 .idea/
 projet/target/
 __pycache__/
+
+DATA
+
+.vscode/*
