@@ -11,10 +11,7 @@ import org.redisson.client.codec.DoubleCodec;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -127,12 +124,36 @@ public class Main {
 
         }
 
-        RList<String> know1 = redisson.getList(person1 +"_Knows", codec);
-        RList<String> know2 = redisson.getList(person2+"_Knows", codec);
+        List<String> know1 = redisson.getList(person1+"_Knows", codec);
+        List<String> know2 = redisson.getList(person2+"_Knows", codec);
 
-        return know1.stream()
+        Set<String> allFriendsPerson1 = new HashSet<>(know1);
+        Set<String> allFriendsPerson2 = new HashSet<>(know2);
+
+        List<String> knowAlreadyDone = new ArrayList<>();
+
+
+        for (int i = 0; i < 2; i++) {
+            for(String person : know1){
+                allFriendsPerson1.addAll(redisson.getList(person + "_Knows", codec));
+            }
+            for (String person : know2){
+                allFriendsPerson2.addAll(redisson.getList(person + "_Knows", codec));
+            }
+            knowAlreadyDone.addAll(know1);
+            knowAlreadyDone.addAll(know2);
+
+            know1.addAll(allFriendsPerson1.stream().toList());
+            know2.addAll(allFriendsPerson2.stream().toList());
+
+            know1.removeAll(knowAlreadyDone);
+            know2.removeAll(knowAlreadyDone);
+
+        }
+
+        return allFriendsPerson1.stream()
                 .distinct()
-                .filter(know2::contains)
+                .filter(allFriendsPerson2::contains)
                 .collect(Collectors.toList());
     }
 }
