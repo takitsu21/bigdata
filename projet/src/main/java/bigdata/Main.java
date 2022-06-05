@@ -51,6 +51,14 @@ public class Main {
             e.printStackTrace();
         }
 
+        Set<String> query5 = Main.Query5(redisson, "4145", "Nomis");
+        System.out.println("Query n°5 Ended:\n--------------------------");
+
+        for (Object people : query5) {
+            System.out.println(people);
+        }
+        System.out.println("--------------------------");
+
         System.exit(0);
     }
 
@@ -202,4 +210,43 @@ public class Main {
         }
         return threeHop;
     }
+
+
+    /**
+     * Query 5. Given a start customer and a product category,
+     * find persons who are this customer's friends within 3-hop friendships in Knows graph,
+     * besides, they have bought products in the given category.
+     * Finally, return feedback with the 5-rating review of those bought products.
+     *
+     * @param redisson
+     * @return
+     * @throws ParseException
+     */
+    public static Set<String> Query5(RedissonClient redisson, String customer, String productCategorie) {
+        StringCodec codec = new StringCodec();
+        Set<String> friendsCustomer = Main.getHopThree(redisson, customer, 3, new HashSet<>());
+        Set<String> allFeedback = new HashSet<>();
+        for (String personId : friendsCustomer) {
+
+            RList<String> orders = redisson.getList(personId + "_Orders", codec);
+            Set<String> ordersAsin = new HashSet<>();
+            orders.forEach(order -> ordersAsin.addAll(redisson.getList(order + "_Orderline", codec)));
+
+            for (String orderAsin : ordersAsin) {
+
+                if (redisson.getMap(orderAsin, codec).get("brand").equals(productCategorie)) {
+
+                    String feedbackWithNote = (String) redisson.getMap(orderAsin, codec).get(personId);
+                    if (feedbackWithNote != null) {
+                        double note = Double.parseDouble(feedbackWithNote.substring(1, 4));
+                        String feedback = feedbackWithNote.substring(5);
+                        if (note == 5.) allFeedback.add(feedback);
+                    }
+                }
+            }
+        }
+        return allFeedback;
+    }
 }
+
+
