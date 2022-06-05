@@ -34,6 +34,13 @@ public class Main {
                 System.out.println(people);
             }
             System.out.println("--------------------------");
+            System.out.println("Query n°3 Ended:\n--------------------------");
+
+            List<String> query3 = Main.Query3(redisson, "B000F3E5OY", "01/08/2012", "31/12/1968");
+            for (String content : query3) {
+                System.out.println(content);
+            }
+            System.out.println("--------------------------");
 
             List<String> query4 = Main.Query4(redisson);
             System.out.println("Query n°4 Ended:\n--------------------------");
@@ -78,6 +85,50 @@ public class Main {
 
                 if (creationDate.before(beforeDate) && creationDate.after(afterDate)) {
                     query.add(PersonId);
+                    break;
+                }
+            }
+        }
+        return query;
+    }
+
+    /**
+     * Query 3. For a given product during a given period, find people who have undertaken
+     * activities related to it, e.g., posts, comments, and review, and return sentences from these texts
+     * that contain negative sentiments
+     * @param redisson
+     * @param ProductId
+     * @param before
+     * @param after
+     * @return
+     * @throws ParseException
+     */
+    public static List<String> Query3(RedissonClient redisson, String ProductId, String before, String after)
+            throws ParseException {
+        List<String> query = new ArrayList<>();
+        Date beforeDate = new SimpleDateFormat("dd/MM/yyyy").parse(before);
+        Date afterDate = new SimpleDateFormat("dd/MM/yyyy").parse(after);
+
+        StringCodec codec = new StringCodec();
+        RMap<String, String> map = redisson.getMap(ProductId, codec);
+
+        List<String> clientsWithFeedBack = map.readAllKeySet().stream()
+                .filter(s -> !Set.of("brand", "title", "price", "imgUrl").contains(s)).toList();
+        System.out.println(clientsWithFeedBack);
+        for (String PersonId : clientsWithFeedBack) {
+            RList<String> posts = redisson.getList(PersonId + "_Posts", codec);
+            String[] splitReview = map.get(PersonId).split(",");
+            float rate = Float.parseFloat(splitReview[0].replace("'", ""));
+            String review = String.join("", Arrays.copyOfRange(splitReview, 1, splitReview.length));
+
+            for (String postID : posts) {
+                RMap<String, String> post = redisson.getMap(postID, codec);
+
+                Date creationDate = new Date((int) (Float.parseFloat(post.get("creationDate"))));
+
+                // rate < 2.5 = review negative
+                if (creationDate.before(beforeDate) && creationDate.after(afterDate) && rate < 2.5) {
+                    query.add(review);
                     break;
                 }
             }
