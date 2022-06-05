@@ -114,7 +114,7 @@ public class Main {
 
         List<String> clientsWithFeedBack = map.readAllKeySet().stream()
                 .filter(s -> !Set.of("brand", "title", "price", "imgUrl").contains(s)).toList();
-        System.out.println(clientsWithFeedBack);
+
         for (String PersonId : clientsWithFeedBack) {
             RList<String> posts = redisson.getList(PersonId + "_Posts", codec);
             String[] splitReview = map.get(PersonId).split(",");
