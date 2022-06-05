@@ -27,20 +27,17 @@ public class Main {
         RedissonClient redisson = Redisson.create(config);
 
         try {
-            List<String> query = Main.Query2(redisson, "B000F3E5OY", "01/08/2012", "31/12/1968");
+            List<String> query2 = Main.Query2(redisson, "B000F3E5OY", "01/08/2012", "31/12/1968");
             System.out.println("Query n°2 Ended:\n--------------------------");
 
-            for (String people : query) {
+            for (String people : query2) {
                 System.out.println(people);
             }
             System.out.println("--------------------------");
 
             List<String> query4 = Main.Query4(redisson);
             System.out.println("Query n°4 Ended:\n--------------------------");
-
-            for (String people : query4) {
-                System.out.println(people);
-            }
+            System.out.println("SIZE: " + query4.size());
             System.out.println("--------------------------");
 
         } catch (ParseException e) {
