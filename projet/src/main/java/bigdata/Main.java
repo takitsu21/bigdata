@@ -35,10 +35,10 @@ public class Main {
             }
             System.out.println("--------------------------");
 
-            List<Object> query4 = Main.Query4(redisson); // j'ai mit query en attendant de pouvoir avoir toute la collection
+            List<String> query4 = Main.Query4(redisson);
             System.out.println("Query n°4 Ended:\n--------------------------");
 
-            for (Object people : query4) {
+            for (String people : query4) {
                 System.out.println(people);
             }
             System.out.println("--------------------------");
@@ -46,6 +46,8 @@ public class Main {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
+        System.exit(0);
     }
 
     /**
@@ -86,81 +88,70 @@ public class Main {
         return query;
     }
 
-
     /**
-     * Query 4. Find the top-2 persons who spend the highest amount of money in orders.
-     * Then for each person, traverse her knows-graph with 3-hop to find the friends,
+     * Query 4. Find the top-2 persons who spend the highest amount of money in
+     * orders.
+     * Then for each person, traverse her knows-graph with 3-hop to find the
+     * friends,
      * and finally return the common friends of these two persons.
      *
      * @param redisson
      * @return
      * @throws ParseException
      */
-    public static List<Object> Query4(RedissonClient redisson){
+    public static List<String> Query4(RedissonClient redisson) {
         String person1 = "";
         String person2 = "";
         double pricePerson1 = 0;
-        double pricePerson2=0;
+        double pricePerson2 = 0;
 
-        StringCodec codec = new StringCodec();
+        StringCodec codecString = new StringCodec();
         DoubleCodec codecPrice = new DoubleCodec();
-        List<String> orders = redisson.getList("Orders", codec);
-        Set<String> persons = new HashSet<>();
-        orders.forEach(order -> persons.add((String) redisson.getMap(order, codec).get("PersonId")));
+
+        RList<String> persons = redisson.getList("Customers", codecString);
         for (String personID : persons) {
-            RList<String> ordersID = redisson.getList(personID+"_Orders", codec);
-            double sum=0;
-            for(String orderID : ordersID) {
+            RList<String> ordersID = redisson.getList(personID + "_Orders", codecString);
+            double sum = 0;
+            for (String orderID : ordersID) {
                 Double totalPrice = (Double) redisson.getMap(orderID, codecPrice).get("TotalPrice");
-                sum+=totalPrice;
+                sum += totalPrice;
             }
-            if (sum>pricePerson1){
-                person2=person1;
-                pricePerson2=pricePerson1;
-                person1= personID;
-                pricePerson1=sum;
-            }
-            else if (sum>pricePerson2){
-                person2= personID;
+            if (sum > pricePerson1) {
+                person2 = person1;
+                pricePerson2 = pricePerson1;
+                person1 = personID;
+                pricePerson1 = sum;
+            } else if (sum > pricePerson2) {
+                person2 = personID;
                 pricePerson2 = sum;
             }
 
         }
 
-        List<String> know1 = redisson.getList(person1+"_Knows", codec);
-        List<String> know2 = redisson.getList(person2+"_Knows", codec);
+        Set<String> hopThreeP1 = Main.getHopThree(redisson, person1, 3, new HashSet<>());
+        Set<String> hopThreeP2 = Main.getHopThree(redisson, person2, 3, new HashSet<>());
 
-        Set<String> allFriendsPerson1 = new HashSet<>(know1);
-        Set<String> allFriendsPerson2 = new HashSet<>(know2);
-
-        List<String> knowAlreadyDone = new ArrayList<>();
-
-
-        for (int i = 0; i < 2; i++) {
-            for(String person : know1){
-                allFriendsPerson1.addAll(redisson.getList(person + "_Knows", codec));
-            }
-            for (String person : know2){
-                allFriendsPerson2.addAll(redisson.getList(person + "_Knows", codec));
-            }
-            knowAlreadyDone.addAll(know1);
-            knowAlreadyDone.addAll(know2);
-
-            know1.addAll(allFriendsPerson1.stream().toList());
-            know2.addAll(allFriendsPerson2.stream().toList());
-
-            know1.removeAll(knowAlreadyDone);
-            know2.removeAll(knowAlreadyDone);
-
-        }
-
-        return allFriendsPerson1.stream()
+        return hopThreeP1.stream()
                 .distinct()
-                .filter(allFriendsPerson2::contains)
+                .filter(hopThreeP2::contains)
                 .collect(Collectors.toList());
     }
 
-
+    public static Set<String> getHopThree(RedissonClient redisson, String personId, int depth, Set<String> seen) {
+        StringCodec codec = new StringCodec();
+        if (depth == 1) {
+            return new HashSet<>(redisson.getList(personId + "_Knows", codec));
+        }
+        RList<String> knows = redisson.getList(personId + "_Knows", codec);
+        Set<String> threeHop = new HashSet<>(knows);
+        for (String person : knows) {
+            if (seen.contains(person)) {
+                continue;
+            } else {
+                seen.add(person);
+            }
+            threeHop.addAll(Main.getHopThree(redisson, person, depth - 1, seen));
+        }
+        return threeHop;
+    }
 }
-
-
