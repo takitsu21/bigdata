@@ -25,10 +25,11 @@ public class Main {
 
         Main.querys = new Querys(redisson);
 
-        testQuery2();
-        testQuery3();
-        testQuery4();
-        testQuery5();
+        // testQuery2();
+        // testQuery3();
+        // testQuery4();
+        // testQuery5();
+        testQuery6();
 
         System.exit(0);
     }
@@ -77,6 +78,16 @@ public class Main {
         Set<String> query5 = querys.Query5("4145", "Nomis");
 
         for (Object people : query5) {
+            System.out.println(people);
+        }
+        System.out.println("--------------------------");
+    }
+
+    public static void testQuery6() {
+        System.out.println("Query n°6 :\n--------------------------");
+        List<String> query6 = querys.Query6("4149", "10995116280950");
+
+        for (Object people : query6) {
             System.out.println(people);
         }
         System.out.println("--------------------------");

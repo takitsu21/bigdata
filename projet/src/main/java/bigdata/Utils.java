@@ -61,7 +61,9 @@ public class Utils {
             return directions;
         }
         for (String person = personIdTo; person != null; person = prev.get(person)) {
-            directions.add(person);
+            if (person != personIdFrom && person != personIdTo) {
+                directions.add(person);
+            }
         }
         Collections.reverse(directions);
         return directions;

@@ -4,9 +4,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,6 +21,8 @@ import org.redisson.client.codec.StringCodec;
 
 public class Querys {
     public final RedissonClient redisson;
+    public final StringCodec codecString = new StringCodec();
+    public final DoubleCodec codecDouble = new DoubleCodec();
 
     public Querys(RedissonClient redisson) {
         this.redisson = redisson;
@@ -37,17 +42,16 @@ public class Querys {
         Date beforeDate = new SimpleDateFormat("dd/MM/yyyy").parse(before);
         Date afterDate = new SimpleDateFormat("dd/MM/yyyy").parse(after);
 
-        StringCodec codec = new StringCodec();
-        RMap<String, String> map = this.redisson.getMap(ProductId, codec);
+        RMap<String, String> map = redisson.getMap(ProductId, codecString);
 
         List<String> clientsWithFeedBack = map.readAllKeySet().stream()
                 .filter(s -> !Set.of("brand", "title", "price", "imgUrl").contains(s)).toList();
 
         for (String PersonId : clientsWithFeedBack) {
-            RList<String> posts = this.redisson.getList(PersonId + "_Posts", codec);
+            RList<String> posts = redisson.getList(PersonId + "_Posts", codecString);
 
             for (String postID : posts) {
-                RMap<String, String> post = this.redisson.getMap(postID, codec);
+                RMap<String, String> post = redisson.getMap(postID, codecString);
 
                 Date creationDate = new Date((int) (Float.parseFloat(post.get("creationDate"))));
 
@@ -79,20 +83,19 @@ public class Querys {
         Date beforeDate = new SimpleDateFormat("dd/MM/yyyy").parse(before);
         Date afterDate = new SimpleDateFormat("dd/MM/yyyy").parse(after);
 
-        StringCodec codec = new StringCodec();
-        RMap<String, String> map = this.redisson.getMap(ProductId, codec);
+        RMap<String, String> map = redisson.getMap(ProductId, codecString);
 
         List<String> clientsWithFeedBack = map.readAllKeySet().stream()
                 .filter(s -> !Set.of("brand", "title", "price", "imgUrl").contains(s)).toList();
 
         for (String PersonId : clientsWithFeedBack) {
-            RList<String> posts = this.redisson.getList(PersonId + "_Posts", codec);
+            RList<String> posts = redisson.getList(PersonId + "_Posts", codecString);
             String[] splitReview = map.get(PersonId).split(",");
             float rate = Float.parseFloat(splitReview[0].replace("'", ""));
             String review = String.join("", Arrays.copyOfRange(splitReview, 1, splitReview.length));
 
             for (String postID : posts) {
-                RMap<String, String> post = this.redisson.getMap(postID, codec);
+                RMap<String, String> post = redisson.getMap(postID, codecString);
 
                 Date creationDate = new Date((int) (Float.parseFloat(post.get("creationDate"))));
 
@@ -122,15 +125,12 @@ public class Querys {
         double pricePerson1 = 0;
         double pricePerson2 = 0;
 
-        StringCodec codecString = new StringCodec();
-        DoubleCodec codecPrice = new DoubleCodec();
-
-        RList<String> persons = this.redisson.getList("Customers", codecString);
+        RList<String> persons = redisson.getList("Customers", codecString);
         for (String personID : persons) {
-            RList<String> ordersID = this.redisson.getList(personID + "_Orders", codecString);
+            RList<String> ordersID = redisson.getList(personID + "_Orders", codecString);
             double sum = 0;
             for (String orderID : ordersID) {
-                Double totalPrice = (Double) this.redisson.getMap(orderID, codecPrice).get("TotalPrice");
+                Double totalPrice = (Double) redisson.getMap(orderID, codecDouble).get("TotalPrice");
                 sum += totalPrice;
             }
             if (sum > pricePerson1) {
@@ -146,8 +146,8 @@ public class Querys {
             ;
         }
 
-        Set<String> hopThreeP1 = Utils.getHopThree(this.redisson, person1, 3, new HashSet<>());
-        Set<String> hopThreeP2 = Utils.getHopThree(this.redisson, person2, 3, new HashSet<>());
+        Set<String> hopThreeP1 = Utils.getHopThree(redisson, person1, 3, new HashSet<>());
+        Set<String> hopThreeP2 = Utils.getHopThree(redisson, person2, 3, new HashSet<>());
 
         return hopThreeP1.stream()
                 .distinct()
@@ -166,18 +166,17 @@ public class Querys {
      * @throws ParseException
      */
     public Set<String> Query5(String customer, String productCategorie) {
-        StringCodec codec = new StringCodec();
-        Set<String> friendsCustomer = Utils.getHopThree(this.redisson, customer, 3, new HashSet<>());
+        Set<String> friendsCustomer = Utils.getHopThree(redisson, customer, 3, new HashSet<>());
         Set<String> allFeedback = new HashSet<>();
         for (String personId : friendsCustomer) {
 
-            RList<String> orders = this.redisson.getList(personId + "_Orders", codec);
+            RList<String> orders = redisson.getList(personId + "_Orders", codecString);
             Set<String> ordersAsin = new HashSet<>();
-            orders.forEach(order -> ordersAsin.addAll(this.redisson.getList(order + "_Orderline", codec)));
+            orders.forEach(order -> ordersAsin.addAll(redisson.getList(order + "_Orderline", codecString)));
 
             for (String orderAsin : ordersAsin) {
-                if (this.redisson.getMap(orderAsin, codec).get("brand").equals(productCategorie)) {
-                    String feedbackWithNote = (String) this.redisson.getMap(orderAsin, codec).get(personId);
+                if (redisson.getMap(orderAsin, codecString).get("brand").equals(productCategorie)) {
+                    String feedbackWithNote = (String) redisson.getMap(orderAsin, codecString).get(personId);
                     if (feedbackWithNote != null) {
                         double note = Double.parseDouble(feedbackWithNote.substring(1, 4));
                         String feedback = feedbackWithNote.substring(5);
@@ -201,9 +200,21 @@ public class Querys {
      * @return
      */
     public List<String> Query6(String customer1, String customer2) {
-
-        return new ArrayList<>();
-
+        List<String> path = Utils.getHopThreePath(redisson, customer1, customer2);
+        Map<String, Double> sellers = new HashMap<>();
+        for (String person : path) {
+            RList<String> orders = redisson.getList(person + "_Orders", codecString);
+            for (String order : orders) {
+                RList<String> products = redisson.getList(order + "_Orderline", codecString);
+                for (String product : products) {
+                    Double nbr = sellers.get(product);
+                    sellers.put(product, nbr == null ? 1 : nbr + 1);
+                }
+            }
+        }
+        return sellers.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(3).map(entry -> entry.getKey()).collect(Collectors.toList());
     }
 
 }
