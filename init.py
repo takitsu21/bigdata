@@ -67,12 +67,18 @@ if start < 5:
     print("5.Vendor...")
     with open("./DATA/Vendor/Vendor.csv", "r") as f:
         next(f)
+        Vendors = []
         reader = csv.reader(f, quotechar='"', delimiter=',',
                             quoting=csv.QUOTE_ALL, skipinitialspace=True)
         for row in reader:
             # Vendor | Country | Industry
             db.hset(row[0], "Country", row[1])
             db.hset(row[0], "Industry", row[2])
+            # La même entreprise mais en England et UK mdrr faut aller se faire fouttre
+            if row[1] != "England":
+                Vendors.append(row[0])
+
+        db.rpush("Vendors", *Vendors)
 
 if start < 6:
     print("6.Order...")
@@ -112,7 +118,7 @@ if start < 7:
         db.rpush(f"{OrderId}_Orderline", *asins)
 
 if start < 8:
-    print("8.person_hasInterest_tag_0_0.csv...")
+    print("8.person_hasInterest_tag_0_0...")
     with open("./DATA/SocialNetwork/person_hasInterest_tag_0_0.csv", "r") as f:
         next(f)
         reader = csv.reader(f, quotechar='"', delimiter='|',
@@ -133,7 +139,7 @@ if start < 9:
 
 if start < 10:
     print("10.post_0_0...")
-    for chunk in pd.read_csv("./DATA/SocialNetwork/post_0_0", sep="|", chunksize=20000):
+    for chunk in pd.read_csv("./DATA/SocialNetwork/post_0_0.csv", sep="|", chunksize=20000):
         for index, row in chunk.iterrows():
             # id | imageFile | creationDate | locationIP | browserUsed | language | content | length
             db.hset(row[0], "imageFile", row[1])

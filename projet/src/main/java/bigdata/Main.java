@@ -29,7 +29,8 @@ public class Main {
         // testQuery3();
         // testQuery4();
         // testQuery5();
-        testQuery6();
+        // testQuery6();
+        testQuery9();
 
         System.exit(0);
     }
@@ -88,6 +89,16 @@ public class Main {
         List<String> query6 = querys.Query6("4149", "10995116280950");
 
         for (Object people : query6) {
+            System.out.println(people);
+        }
+        System.out.println("--------------------------");
+    }
+
+    public static void testQuery9() {
+        System.out.println("Query n°9 :\n--------------------------");
+        List<String> query9 = querys.Query9("United_Kingdom");
+
+        for (Object people : query9) {
             System.out.println(people);
         }
         System.out.println("--------------------------");

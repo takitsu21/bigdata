@@ -217,4 +217,63 @@ public class Querys {
                 .limit(3).map(entry -> entry.getKey()).collect(Collectors.toList());
     }
 
+    /**
+     * Query 9. Find top-3 companies who have the largest amount of sales at one
+     * country, for each
+     * company, compare the number of the male and female customers, and return the
+     * most recent
+     * posts of them.
+     */
+    public List<String> Query9(String country) {
+        class Company {
+            int sales = 0;
+            int males = 0;
+            int females = 0;
+
+            @Override
+            public String toString() {
+                return "sales: " + sales + "\nmales: " + males + "\nfemales: " + females;
+            }
+        }
+
+        RList<String> vendors = redisson.getList("Vendors", codecString);
+        Map<String, Company> sales = vendors.stream()
+                .filter(vendor -> redisson.getMap(vendor, codecString).get("Country").equals(country))
+                .collect(Collectors.toMap(vendor -> vendor, vendor -> new Company()));
+
+        RList<String> orders = redisson.getList("Orders", codecString);
+        for (String orderId : orders) {
+            RMap<String, String> order = redisson.getMap(orderId, codecString);
+            String personId = order.get("PersonId");
+            RMap<String, String> person = redisson.getMap(personId, codecString);
+            String gender = person.get("gender");
+
+            RList<String> products = redisson.getList(orderId + "_Orderline", codecString);
+            for (String product : products) {
+                RMap<String, String> map = redisson.getMap(product, codecString);
+                String brand = map.get("brand");
+                Company company = sales.get(brand);
+                if (company != null) {
+                    company.sales++;
+                    if (gender.equals("male")) {
+                        company.males++;
+                    } else {
+                        company.females++;
+                    }
+                }
+            }
+
+        }
+
+        System.out.println(sales);
+
+        List<String> bestsCompanies = sales.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue((c1, c2) -> Integer.compare(c2.sales, c1.sales)))
+                .limit(3).map(entry -> entry.getKey()).collect(Collectors.toList());
+
+        System.out.println(bestsCompanies);
+
+        return new ArrayList<>();
+    }
+
 }
