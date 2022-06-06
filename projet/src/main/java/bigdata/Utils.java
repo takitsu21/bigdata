@@ -68,4 +68,18 @@ public class Utils {
         Collections.reverse(directions);
         return directions;
     }
+
+    public static class Company {
+        int sales = 0;
+        int males = 0;
+        int females = 0;
+        Set<String> customers = new HashSet<>();
+        Set<String> posts = new HashSet<>();
+
+        @Override
+        public String toString() {
+            return "\nsales: " + sales + "\nmales: " + males + "\nfemales: " + females + "\ncustomers: "
+                    + customers.size() + "\n";
+        }
+    }
 }

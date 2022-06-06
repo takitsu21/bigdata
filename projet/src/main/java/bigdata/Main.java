@@ -3,11 +3,14 @@ package bigdata;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
+
+import bigdata.Utils.Company;
 
 public class Main {
     public static Querys querys;
@@ -96,11 +99,9 @@ public class Main {
 
     public static void testQuery9() {
         System.out.println("Query n°9 :\n--------------------------");
-        List<String> query9 = querys.Query9("United_Kingdom");
+        Map<String, Company> query9 = querys.Query9("United_Kingdom");
 
-        for (Object people : query9) {
-            System.out.println(people);
-        }
+        System.out.println(query9);
         System.out.println("--------------------------");
     }
 

@@ -19,6 +19,8 @@ import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.DoubleCodec;
 import org.redisson.client.codec.StringCodec;
 
+import bigdata.Utils.Company;
+
 public class Querys {
     public final RedissonClient redisson;
     public final StringCodec codecString = new StringCodec();
@@ -224,18 +226,7 @@ public class Querys {
      * most recent
      * posts of them.
      */
-    public List<String> Query9(String country) {
-        class Company {
-            int sales = 0;
-            int males = 0;
-            int females = 0;
-
-            @Override
-            public String toString() {
-                return "sales: " + sales + "\nmales: " + males + "\nfemales: " + females;
-            }
-        }
-
+    public Map<String, Company> Query9(String country) {
         RList<String> vendors = redisson.getList("Vendors", codecString);
         Map<String, Company> sales = vendors.stream()
                 .filter(vendor -> redisson.getMap(vendor, codecString).get("Country").equals(country))
@@ -255,6 +246,7 @@ public class Querys {
                 Company company = sales.get(brand);
                 if (company != null) {
                     company.sales++;
+                    company.customers.add(personId);
                     if (gender.equals("male")) {
                         company.males++;
                     } else {
@@ -265,15 +257,28 @@ public class Querys {
 
         }
 
-        System.out.println(sales);
-
-        List<String> bestsCompanies = sales.entrySet().stream()
+        Map<String, Company> bestsCompanies = sales.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue((c1, c2) -> Integer.compare(c2.sales, c1.sales)))
-                .limit(3).map(entry -> entry.getKey()).collect(Collectors.toList());
+                .limit(3).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        System.out.println(bestsCompanies);
+        for (Map.Entry<String, Company> company : bestsCompanies.entrySet()) {
+            for (String personId : company.getValue().customers) {
+                RList<String> posts = redisson.getList(personId + "_Posts", codecString);
+                Double lastTime = 0.;
+                String lastPost = "";
 
-        return new ArrayList<>();
+                for (String postId : posts) {
+                    Double creationDate = (Double) redisson.getMap(postId, codecDouble).get("creationDate");
+                    if (creationDate > lastTime) {
+                        lastTime = creationDate;
+                        lastPost = postId;
+                    }
+                }
+                company.getValue().posts.add(lastPost);
+            }
+        }
+
+        return bestsCompanies;
     }
 
 }
