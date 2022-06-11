@@ -149,6 +149,7 @@ if start < 10:
             db.hset(row[0], "language", row[5])
             db.hset(row[0], "content", row[6])
             db.hset(row[0], "length", float(row[7]))
+            db.rpush("Posts", row[0])
 
 
 if start < 11:
@@ -160,6 +161,7 @@ if start < 11:
         for row in reader:
             # Post.id | Person.id
             db.rpush(f"{row[1]}_Posts", row[0])
+            db.hset(row[0], "creator", row[1])
 
 if start < 12:
     print("12.post_hasTag_tag_0_0...")

@@ -82,4 +82,17 @@ public class Utils {
                     + customers.size() + "\n";
         }
     }
+
+    public static class RFM {
+        int recency = 0;
+        int frequency = 0;
+        int monetary = 0;
+        Set<String> tags = new HashSet<>();
+        Set<String> reviews = new HashSet<>();
+
+        @Override
+        public String toString() {
+            return "\nrecency: " + recency + "\nfrequency: " + frequency + "\nmonetary: " + monetary + "\n";
+        }
+    }
 }

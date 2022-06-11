@@ -2,6 +2,7 @@ package bigdata;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -20,6 +21,7 @@ import org.redisson.client.codec.DoubleCodec;
 import org.redisson.client.codec.StringCodec;
 
 import bigdata.Utils.Company;
+import bigdata.Utils.RFM;
 
 public class Querys {
     public final RedissonClient redisson;
@@ -279,6 +281,39 @@ public class Querys {
         }
 
         return bestsCompanies;
+    }
+
+    public Map<String, RFM> Query10() {
+        Map<String, RFM> persons = new HashMap<>();
+        long lastYear = LocalDate.now().minusYears(1).toEpochDay() * 24 * 60 * 60;
+        long lastMonth = LocalDate.now().minusMonths(1).toEpochDay() * 24 * 60 * 60;
+        long lastWeek = LocalDate.now().minusWeeks(1).toEpochDay() * 24 * 60 * 60;
+        RList<String> posts = redisson.getList("Posts", codecString);
+        for (String postId : posts) {
+            RMap<String, String> map = redisson.getMap(postId, codecString);
+            Double date = Double.valueOf(map.get("creationDate"));
+            if (date > lastYear) {
+                String creator = map.get("creator");
+                RList<String> tags = redisson.getList(postId + "_Tags", codecString);
+                RFM rfm = persons.get(creator);
+                if (rfm == null) {
+                    persons.put(creator, new RFM());
+                }
+                rfm.tags.addAll(tags);
+                rfm.frequency++;
+                if (date > lastWeek) {
+                    rfm.recency += 5;
+                } else if (date > lastMonth) {
+                    rfm.recency += 3;
+                } else {
+                    rfm.recency++;
+                }
+            }
+        }
+
+        return persons.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue((c1, c2) -> Integer.compare(c2.frequency, c1.frequency)))
+                .limit(10).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
 }

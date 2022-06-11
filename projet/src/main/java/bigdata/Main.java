@@ -11,6 +11,7 @@ import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 
 import bigdata.Utils.Company;
+import bigdata.Utils.RFM;
 
 public class Main {
     public static Querys querys;
@@ -33,7 +34,8 @@ public class Main {
         // testQuery4();
         // testQuery5();
         // testQuery6();
-        testQuery9();
+        // testQuery9();
+        testQuery10();
 
         System.exit(0);
     }
@@ -102,6 +104,14 @@ public class Main {
         Map<String, Company> query9 = querys.Query9("United_Kingdom");
 
         System.out.println(query9);
+        System.out.println("--------------------------");
+    }
+
+    public static void testQuery10() {
+        System.out.println("Query n°10 :\n--------------------------");
+        Map<String, RFM> query10 = querys.Query10();
+
+        System.out.println(query10);
         System.out.println("--------------------------");
     }
 
