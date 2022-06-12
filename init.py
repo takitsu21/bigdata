@@ -35,6 +35,7 @@ if start < 3:
     print("3.Product...")
     with open("./DATA/Product/Product.csv", "r") as f:
         next(f)
+        products = []
         reader = csv.reader(f, quotechar='"', delimiter=',',
                             quoting=csv.QUOTE_ALL, skipinitialspace=True)
         for row in reader:
@@ -42,7 +43,8 @@ if start < 3:
             db.hset(row[0], "title", row[1])
             db.hset(row[0], "price", float(row[2]))
             db.hset(row[0], "imgUrl", row[3])
-
+            products.append(row[0])
+        db.rpush("Products", *products)
 if start < 4:
     print("4.Customer...")
     with open("./DATA/Customer/person_0_0.csv", "r") as f:

@@ -3,15 +3,7 @@ package bigdata;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.redisson.api.RList;
@@ -36,7 +28,7 @@ public class Querys {
      * Query 2:
      * For a given product during a given period, find the people who commented or
      * posted on it, and had bought it.
-     * 
+     *
      * @return
      * @throws ParseException
      */
@@ -74,7 +66,7 @@ public class Querys {
      * activities related to it, e.g., posts, comments, and review, and return
      * sentences from these texts
      * that contain negative sentiments
-     * 
+     *
      * @param ProductId
      * @param before
      * @param after
@@ -198,7 +190,7 @@ public class Querys {
      * between them
      * in the subgraph, and return the TOP 3 best sellers from all these persons'
      * purchases.
-     * 
+     *
      * @param customer1
      * @param customer2
      * @return
@@ -219,6 +211,36 @@ public class Querys {
         return sellers.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .limit(3).map(entry -> entry.getKey()).collect(Collectors.toList());
+    }
+
+    /**
+     * Query 7. For the products of a given vendor with declining sales compare to the former
+     * quarter, analyze the reviews for these items to see if there are any negative sentiments.
+     *
+     * @param vendor
+     * @return
+     */
+    List<String> Query7(String vendor) {
+        RList<String> products = redisson.getList("Products", codecString);
+        List<String> query = new ArrayList<>();
+        for (String productId : products) {
+            RMap<String, String> product = redisson.getMap(productId, codecString);
+            List<String> clientsWithFeedBack = product.readAllKeySet().stream()
+                    .filter(s -> !Set.of("brand", "title", "price", "imgUrl").contains(s)).toList();
+            if (product.get("brand") != null && product.get("brand").equals(vendor)) {
+                for (String PersonId : clientsWithFeedBack) {
+                    String[] splitReview = product.get(PersonId).split(",");
+                    float rate = Float.parseFloat(splitReview[0].replace("'", ""));
+                    String review = String.join("", Arrays.copyOfRange(splitReview, 1, splitReview.length));
+                    if (product.get("brand") != null
+                            && product.get("brand").equals(vendor)
+                            && rate < 2.5) {
+                        query.add(review);
+                    }
+                }
+            }
+        }
+        return query;
     }
 
     /**
@@ -315,5 +337,6 @@ public class Querys {
                 .sorted(Map.Entry.comparingByValue((c1, c2) -> Integer.compare(c2.frequency, c1.frequency)))
                 .limit(10).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
+
 
 }
