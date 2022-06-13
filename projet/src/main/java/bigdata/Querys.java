@@ -138,8 +138,6 @@ public class Querys {
                 person2 = personID;
                 pricePerson2 = sum;
             }
-
-            ;
         }
 
         Set<String> hopThreeP1 = Utils.getHopThree(redisson, person1, 3, new HashSet<>());
@@ -210,7 +208,7 @@ public class Querys {
         }
         return sellers.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .limit(3).map(entry -> entry.getKey()).collect(Collectors.toList());
+                .limit(3).map(Map.Entry::getKey).collect(Collectors.toList());
     }
 
     /**
@@ -313,7 +311,7 @@ public class Querys {
         RList<String> posts = redisson.getList("Posts", codecString);
         for (String postId : posts) {
             RMap<String, String> map = redisson.getMap(postId, codecString);
-            Double date = Double.valueOf(map.get("creationDate"));
+            double date = Double.parseDouble(map.get("creationDate"));
             if (date > lastYear) {
                 String creator = map.get("creator");
                 RList<String> tags = redisson.getList(postId + "_Tags", codecString);
