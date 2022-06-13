@@ -15,6 +15,7 @@ import bigdata.Utils.RFM;
 
 public class Main {
     public static Querys querys;
+    public static Maj maj;
 
     public static void main(String[] args) {
 
@@ -28,15 +29,20 @@ public class Main {
         RedissonClient redisson = Redisson.create(config);
 
         Main.querys = new Querys(redisson);
+        Main.maj = new Maj(redisson);
+
+        maj.insert("B002NGNSOE","0000","4.0,Good");
+        maj.update("B002NGNSOE","8491","4.0,Good");
+        maj.delete("B002NGNSOE","21990232565835");
 
         // testQuery2();
         // testQuery3();
         // testQuery4();
         // testQuery5();
         // testQuery6();
-//        testQuery7();
+        // testQuery7();
         // testQuery9();
-//        testQuery10();
+        //testQuery10();
 
         System.exit(0);
     }
