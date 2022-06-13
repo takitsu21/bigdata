@@ -45,8 +45,19 @@ public class init {
 
         //vendor(redisson);
 
-        order(redisson);
+        //order(redisson);
 
+
+
+        //person_hasInterest(redisson);
+
+        //person_hasInterest(redisson);
+
+        //post(redisson);
+
+        //post_hasCreator(redisson);
+
+        //post_hasTag(redisson);
     }
 
 
@@ -184,5 +195,121 @@ public class init {
 
     
         System.out.println("done Order");
+    }
+
+    public static void invoice(RedissonClient redisson){
+
+    }
+
+    public static void person_hasInterest(RedissonClient redisson){
+        String file = "DATA/SocialNetwork/person_hasInterest_tag_0_0.csv";
+        String line;
+        System.out.println("person_hasInterest ...");
+
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader(file))) {
+            br.readLine();
+            while((line = br.readLine()) != null){
+                String[] row = line.split("\\|");
+                RList<String> knows = redisson.getList(row[0]+"_Tags");
+                knows.add(row[1]);
+            }
+        } catch (Exception e){
+            System.out.println("person_hasInterest issues");
+            System.out.println(e);
+        }
+        System.out.println("done person_hasInterest");
+    }
+
+    public static void person_knows(RedissonClient redisson){
+        String file = "DATA/SocialNetwork/person_knows_person_0_0.csv";
+        String line;
+        System.out.println("person_knows ...");
+
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader(file))) {
+            br.readLine();
+            while((line = br.readLine()) != null){
+                String[] row = line.split("\\|");
+                RList<String> knows = redisson.getList(row[0]+"_Knows");
+                knows.add(row[1]);
+            }
+        } catch (Exception e){
+            System.out.println("person_knows issues");
+            System.out.println(e);
+        }
+        System.out.println("doneperson_knows");
+    }
+
+    public static void post(RedissonClient redisson){
+        String file = "DATA/SocialNetwork/post_0_0.csv";
+        String line;
+        System.out.println("post ...");
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader(file))) {
+            RList<String> posts = redisson.getList("Posts");
+            br.readLine();
+            while((line = br.readLine()) != null){
+                String[] row = line.split("\\|");
+                RMap<String, String> map = redisson.getMap(row[0]);
+                map.put("imageFile",row[1]);
+
+                Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S").parse(row[2]);
+                map.put("creationDate",creationDate.getTime()+"");
+                map.put("locationIP",row[3]);
+                map.put("browserUsed",row[4]);
+                map.put("language",row[5]);
+                map.put("content",row[6]);
+                map.put("length",row[7]);
+                posts.add(row[0]);
+            }
+        } catch (Exception e){
+            System.out.println("post issues");
+            System.out.println(e);
+        }
+        System.out.println("done post");
+    }
+
+    public static void post_hasCreator(RedissonClient redisson){
+        String file = "DATA/SocialNetwork/post_hasCreator_person_0_0.csv";
+        String line;
+        System.out.println("post_hasCreator ...");
+
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader(file))) {
+            br.readLine();
+            while((line = br.readLine()) != null){
+                String[] row = line.split("\\|");
+                RList<String> knows = redisson.getList(row[1]+"_Posts");
+                knows.add(row[0]);
+
+                RMap<String,String> map =redisson.getMap(row[0]);
+                map.put("creator",row[1]);
+            }
+        } catch (Exception e){
+            System.out.println("post_hasCreator issues");
+            System.out.println(e);
+        }
+        System.out.println("done post_hasCreator");
+    }
+
+    public static void post_hasTag(RedissonClient redisson){
+        String file = "DATA/SocialNetwork/post_hasTag_tag_0_0.csv";
+        String line;
+        System.out.println("post_hasTag ...");
+
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader(file))) {
+            br.readLine();
+            while((line = br.readLine()) != null){
+                String[] row = line.split("\\|");
+                RList<String> knows = redisson.getList(row[0]+"_Tags");
+                knows.add(row[1]);
+            }
+        } catch (Exception e){
+            System.out.println("post_hasTag  issues");
+            System.out.println(e);
+        }
+        System.out.println("done post_hasTag ");
     }
 }
