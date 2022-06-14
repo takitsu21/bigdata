@@ -21,7 +21,14 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class init {
+public class InitDB {
+    private final StringCodec stringCodec = new StringCodec();
+
+    private final RedissonClient redisson;
+
+    public InitDB(RedissonClient redissonClient) {
+        this.redisson = redissonClient;
+    }
 
 
     public static void main(String[] args) {
@@ -34,42 +41,44 @@ public class init {
 
         RedissonClient redisson = Redisson.create(config);
 
-        start(redisson);
+        InitDB initDB = new InitDB(redisson);
 
-        //feedback(redisson);
+        initDB.start();
 
-        //brandByProduct(redisson);
+        initDB.feedback();
 
-        //product(redisson);
+        initDB.brandByProduct();
 
-        //customer(redisson);
+        initDB.product();
 
-        //vendor(redisson);
+        initDB.customer();
 
-        //order(redisson);
+        initDB.vendor();
+
+        initDB.order();
 
 
-        //person_hasInterest(redisson);
+        initDB.person_hasInterest();
 
-        //person_hasInterest(redisson);
-        order(redisson);
+        initDB.person_hasInterest();
+        initDB.order();
 
-//        invoice(redisson);
-        //post(redisson);
+        initDB.invoice();
+        initDB.post();
 
-        //post_hasCreator(redisson);
+        initDB.post_hasCreator();
 
-        //post_hasTag(redisson);
+        initDB.post_hasTag();
     }
 
 
-    public static void start(RedissonClient redisson) {
+    public void start() {
         redisson.getKeys().flushdb();
         redisson.getKeys().flushall();
     }
 
-    public static void feedback(RedissonClient redisson) {
-        String file = "DATA/feedback/feedback.csv";
+    public void feedback() {
+        String file = "../DATA/feedback/feedback.csv";
         String line;
         System.out.println("feedback ...");
         try (BufferedReader br =
@@ -87,8 +96,8 @@ public class init {
         System.out.println("done feedback");
     }
 
-    public static void brandByProduct(RedissonClient redisson) {
-        String file = "DATA/Product/BrandByProduct.csv";
+    public void brandByProduct() {
+        String file = "../DATA/Product/BrandByProduct.csv";
         String line;
         System.out.println("BrandByProduct ...");
         try (BufferedReader br =
@@ -106,8 +115,8 @@ public class init {
         System.out.println("done BrandByProduct");
     }
 
-    public static void product(RedissonClient redisson) {
-        String file = "DATA/Product/Product.csv";
+    public void product() {
+        String file = "../DATA/Product/Product.csv";
         String line;
         System.out.println("Product ...");
         try (BufferedReader br =
@@ -127,8 +136,8 @@ public class init {
         System.out.println("done Product");
     }
 
-    public static void customer(RedissonClient redisson) {
-        String file = "DATA/Customer/person_0_0.csv";
+    public void customer() {
+        String file = "../DATA/Customer/person_0_0.csv";
         String line;
         System.out.println("Customer ...");
 
@@ -162,8 +171,8 @@ public class init {
         System.out.println("done Customer");
     }
 
-    public static void vendor(RedissonClient redisson) {
-        String file = "DATA/Vendor/Vendor.csv";
+    public void vendor() {
+        String file = "../DATA/Vendor/Vendor.csv";
         String line;
         System.out.println("Vendor ...");
         RList<String> vendors = redisson.getList("Vendors");
@@ -187,28 +196,28 @@ public class init {
         System.out.println("done Vendor");
     }
 
-    public static void order(RedissonClient redisson) {
+    public void order() {
 
         System.out.println("Order ...");
         try {
             String file = "../DATA/Order/Order.json";
             String line;
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-            RList<String> orders = redisson.getList("Orders", new StringCodec());
+            RList<String> orders = redisson.getList("Orders", stringCodec);
             while ((line = bufferedReader.readLine()) != null) {
                 JSONObject jsonObject = new JSONObject(line);
-                String orderId = (String) jsonObject.get("OrderId");
-                String personId = (String) jsonObject.get("PersonId");
-                RMap<String, String> personOrders = redisson.getMap(
-                        String.format("%s_Orders", personId), new StringCodec());
-                personOrders.fastPut(String.format("%s_Orders", personId), orderId);
-                RMap<String, String> ordersMap = redisson.getMap(orderId, new StringCodec());
+                String orderId = jsonObject.getString("OrderId");
+                String personId = jsonObject.getString("PersonId");
+                RList<String> personOrders = redisson.getList(
+                        String.format("%s_Orders", personId), stringCodec);
+                personOrders.add(orderId);
+                RMap<String, String> ordersMap = redisson.getMap(orderId, stringCodec);
                 ordersMap.fastPut("PersonId", personId);
-                ordersMap.fastPut("OrderDate", (String) jsonObject.get("OrderDate"));
+                ordersMap.fastPut("OrderDate", jsonObject.getString("OrderDate"));
                 ordersMap.fastPut("TotalPrice", String.valueOf(jsonObject.get("TotalPrice")));
 
 
-                RList<String> asins = redisson.getList(String.format("%s_Orderline", orderId), new StringCodec());
+                RList<String> asins = redisson.getList(String.format("%s_Orderline", orderId), stringCodec);
                 JSONArray orderline = jsonObject.getJSONArray("Orderline");
                 for (int i = 0; i < orderline.length(); i++) {
                     JSONObject orderObject = orderline.getJSONObject(i);
@@ -222,7 +231,7 @@ public class init {
         System.out.println("done Order");
     }
 
-    public static void invoice(RedissonClient redisson) {
+    public void invoice() {
 
         System.out.println("Invoice ...");
         try {
@@ -231,9 +240,8 @@ public class init {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(new File(file));
-            Element root = document.getDocumentElement();
 
-            RList<String> orders = redisson.getList("Orders", new StringCodec());
+            RList<String> orders = redisson.getList("Orders", stringCodec);
             NodeList nList = document.getElementsByTagName("Invoice.xml");
             for (int i = 0; i < nList.getLength(); i++) {
                 Node node = nList.item(i);
@@ -246,13 +254,13 @@ public class init {
                     String orderDate = eElement.getElementsByTagName("OrderDate").item(0).getTextContent();
                     String totalPrice = eElement.getElementsByTagName("TotalPrice").item(0).getTextContent();
 
-                    RMap<String, String> ordersMap = redisson.getMap(orderId, new StringCodec());
+                    RMap<String, String> ordersMap = redisson.getMap(orderId, stringCodec);
                     ordersMap.fastPut("PersonId", personId);
                     ordersMap.fastPut("OrderDate", orderDate);
                     ordersMap.fastPut("TotalPrice", totalPrice);
 
 
-                    RList<String> asins = redisson.getList(String.format("%s_Orderline", orderId), new StringCodec());
+                    RList<String> asins = redisson.getList(String.format("%s_Orderline", orderId), stringCodec);
                     for (int j = 0; j < nOrderLine.getLength(); j++) {
                         Node nodeJ = nOrderLine.item(j);
                         if (nodeJ.getNodeType() == Node.ELEMENT_NODE) {
@@ -272,8 +280,8 @@ public class init {
     }
 
 
-    public static void person_hasInterest(RedissonClient redisson) {
-        String file = "DATA/SocialNetwork/person_hasInterest_tag_0_0.csv";
+    public void person_hasInterest() {
+        String file = "../DATA/SocialNetwork/person_hasInterest_tag_0_0.csv";
         String line;
         System.out.println("person_hasInterest ...");
 
@@ -292,8 +300,8 @@ public class init {
         System.out.println("done person_hasInterest");
     }
 
-    public static void person_knows(RedissonClient redisson) {
-        String file = "DATA/SocialNetwork/person_knows_person_0_0.csv";
+    public void person_knows() {
+        String file = "../DATA/SocialNetwork/person_knows_person_0_0.csv";
         String line;
         System.out.println("person_knows ...");
 
@@ -312,8 +320,8 @@ public class init {
         System.out.println("doneperson_knows");
     }
 
-    public static void post(RedissonClient redisson) {
-        String file = "DATA/SocialNetwork/post_0_0.csv";
+    public void post() {
+        String file = "../DATA/SocialNetwork/post_0_0.csv";
         String line;
         System.out.println("post ...");
         try (BufferedReader br =
@@ -341,8 +349,8 @@ public class init {
         System.out.println("done post");
     }
 
-    public static void post_hasCreator(RedissonClient redisson) {
-        String file = "DATA/SocialNetwork/post_hasCreator_person_0_0.csv";
+    public void post_hasCreator() {
+        String file = "../DATA/SocialNetwork/post_hasCreator_person_0_0.csv";
         String line;
         System.out.println("post_hasCreator ...");
 
@@ -364,8 +372,8 @@ public class init {
         System.out.println("done post_hasCreator");
     }
 
-    public static void post_hasTag(RedissonClient redisson) {
-        String file = "DATA/SocialNetwork/post_hasTag_tag_0_0.csv";
+    public void post_hasTag() {
+        String file = "../DATA/SocialNetwork/post_hasTag_tag_0_0.csv";
         String line;
         System.out.println("post_hasTag ...");
 
