@@ -59,9 +59,7 @@ public class InitDB {
 
 
         initDB.person_hasInterest();
-
-        initDB.person_hasInterest();
-        initDB.order();
+        initDB.person_knows();
 
         initDB.invoice();
         initDB.post();
@@ -85,12 +83,12 @@ public class InitDB {
                      new BufferedReader(new FileReader(file))) {
             while ((line = br.readLine()) != null) {
                 String[] row = line.split("\\|");
-                RMap<String, String> map = redisson.getMap(row[0]);
-                map.put(row[1], row[2]);
+                RMap<String, String> map = redisson.getMap(row[0], stringCodec);
+                map.fastPut(row[1], row[2]);
             }
         } catch (Exception e) {
             System.out.println("feedback issues");
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         System.out.println("done feedback");
@@ -105,11 +103,11 @@ public class InitDB {
             while ((line = br.readLine()) != null) {
                 String[] row = line.split(",");
                 RMap<String, String> map = redisson.getMap(row[1]);
-                map.put("brand", row[0]);
+                map.fastPut("brand", row[0]);
             }
         } catch (Exception e) {
             System.out.println("BrandByProduct issues");
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         System.out.println("done BrandByProduct");
@@ -123,14 +121,14 @@ public class InitDB {
                      new BufferedReader(new FileReader(file))) {
             while ((line = br.readLine()) != null) {
                 String[] row = line.split(",");
-                RMap<String, String> map = redisson.getMap(row[0]);
-                map.put("title", row[1]);
-                map.put("price", row[2]);
-                map.put("imgUrl", row[3]);
+                RMap<String, String> map = redisson.getMap(row[0], stringCodec);
+                map.fastPut("title", row[1]);
+                map.fastPut("price", row[2]);
+                map.fastPut("imgUrl", row[3]);
             }
         } catch (Exception e) {
             System.out.println("Product issues");
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         System.out.println("done Product");
@@ -147,7 +145,7 @@ public class InitDB {
             while ((line = br.readLine()) != null) {
 
                 String[] row = line.split("\\|");
-                RList<String> list = redisson.getList(row[0]);
+                RList<String> list = redisson.getList(row[0], stringCodec);
 
                 list.add(row[1]);
                 list.add(row[2]);
@@ -166,7 +164,7 @@ public class InitDB {
             }
         } catch (Exception e) {
             System.out.println("Customer issues");
-            System.out.println(e);
+            e.printStackTrace();
         }
         System.out.println("done Customer");
     }
@@ -175,16 +173,16 @@ public class InitDB {
         String file = "../DATA/Vendor/Vendor.csv";
         String line;
         System.out.println("Vendor ...");
-        RList<String> vendors = redisson.getList("Vendors");
+        RList<String> vendors = redisson.getList("Vendors", stringCodec);
         try (BufferedReader br =
                      new BufferedReader(new FileReader(file))) {
             br.readLine();
             while ((line = br.readLine()) != null) {
 
                 String[] row = line.split(",");
-                RMap<String, String> map = redisson.getMap(row[0]);
-                map.put("Country", row[1]);
-                map.put("Industry", row[2]);
+                RMap<String, String> map = redisson.getMap(row[0], stringCodec);
+                map.fastPut("Country", row[1]);
+                map.fastPut("Industry", row[2]);
                 if (!row[1].equals("England")) {
                     vendors.add(row[0]);
                 }
@@ -290,12 +288,12 @@ public class InitDB {
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] row = line.split("\\|");
-                RList<String> knows = redisson.getList(row[0] + "_Tags");
+                RList<String> knows = redisson.getList(row[0] + "_Tags", stringCodec);
                 knows.add(row[1]);
             }
         } catch (Exception e) {
             System.out.println("person_hasInterest issues");
-            System.out.println(e);
+            e.printStackTrace();
         }
         System.out.println("done person_hasInterest");
     }
@@ -310,12 +308,12 @@ public class InitDB {
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] row = line.split("\\|");
-                RList<String> knows = redisson.getList(row[0] + "_Knows");
+                RList<String> knows = redisson.getList(row[0] + "_Knows", stringCodec);
                 knows.add(row[1]);
             }
         } catch (Exception e) {
             System.out.println("person_knows issues");
-            System.out.println(e);
+            e.printStackTrace();
         }
         System.out.println("doneperson_knows");
     }
@@ -330,21 +328,21 @@ public class InitDB {
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] row = line.split("\\|");
-                RMap<String, String> map = redisson.getMap(row[0]);
-                map.put("imageFile", row[1]);
+                RMap<String, String> map = redisson.getMap(row[0], stringCodec);
+                map.fastPut("imageFile", row[1]);
 
                 Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S").parse(row[2]);
-                map.put("creationDate", creationDate.getTime() + "");
-                map.put("locationIP", row[3]);
-                map.put("browserUsed", row[4]);
-                map.put("language", row[5]);
-                map.put("content", row[6]);
-                map.put("length", row[7]);
+                map.fastPut("creationDate", creationDate.getTime() + "");
+                map.fastPut("locationIP", row[3]);
+                map.fastPut("browserUsed", row[4]);
+                map.fastPut("language", row[5]);
+                map.fastPut("content", row[6]);
+                map.fastPut("length", row[7]);
                 posts.add(row[0]);
             }
         } catch (Exception e) {
             System.out.println("post issues");
-            System.out.println(e);
+            e.printStackTrace();
         }
         System.out.println("done post");
     }
@@ -359,15 +357,15 @@ public class InitDB {
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] row = line.split("\\|");
-                RList<String> knows = redisson.getList(row[1] + "_Posts");
+                RList<String> knows = redisson.getList(row[1] + "_Posts", stringCodec);
                 knows.add(row[0]);
 
                 RMap<String, String> map = redisson.getMap(row[0]);
-                map.put("creator", row[1]);
+                map.fastPut("creator", row[1]);
             }
         } catch (Exception e) {
             System.out.println("post_hasCreator issues");
-            System.out.println(e);
+            e.printStackTrace();
         }
         System.out.println("done post_hasCreator");
     }
@@ -382,12 +380,12 @@ public class InitDB {
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] row = line.split("\\|");
-                RList<String> knows = redisson.getList(row[0] + "_Tags");
+                RList<String> knows = redisson.getList(row[0] + "_Tags", stringCodec);
                 knows.add(row[1]);
             }
         } catch (Exception e) {
             System.out.println("post_hasTag  issues");
-            System.out.println(e);
+            e.printStackTrace();
         }
         System.out.println("done post_hasTag ");
     }
