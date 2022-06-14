@@ -1,13 +1,6 @@
 package bigdata;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import org.redisson.api.RList;
 import org.redisson.api.RedissonClient;
@@ -99,14 +92,40 @@ public class Utils {
     public static Object getMaxFromMap(Map<?, Integer> map) {
         int maxEntry = 0;
         Object ret = null;
-        for (Map.Entry<?, Integer> entry : map.entrySet())
-        {
-            if (maxEntry < entry.getValue())
-            {
+        for (Map.Entry<?, Integer> entry : map.entrySet()) {
+            if (maxEntry < entry.getValue()) {
                 maxEntry = entry.getValue();
                 ret = entry.getKey();
             }
         }
         return ret;
     }
+
+    public static class MapPrinter<K, V> {
+
+        private Map<K, V> map;
+
+        public MapPrinter(Map<K, V> map) {
+            this.map = map;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            Iterator<Map.Entry<K, V>> iter = map.entrySet().iterator();
+            while (iter.hasNext()) {
+                Map.Entry<K, V> entry = iter.next();
+                sb.append(entry.getKey());
+                sb.append('=').append('"');
+                sb.append(entry.getValue());
+                sb.append('"');
+                if (iter.hasNext()) {
+                    sb.append(',').append(' ');
+                }
+                sb.append("\n");
+            }
+            return sb.toString();
+        }
+    }
+
 }

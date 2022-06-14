@@ -32,14 +32,14 @@ public class Main {
         Main.maj = new Maj(redisson);
 
         //Requetes
-        //testQuery1();
+//        testQuery1();
         // testQuery2();
         // testQuery3();
         // testQuery4();
         // testQuery5();
         // testQuery6();
         // testQuery7();
-        testQuery8();
+//        testQuery8();
         // testQuery9();
         //testQuery10();
 
@@ -53,11 +53,10 @@ public class Main {
 
     public static void testQuery1() {
         System.out.println("Query n°1 :\n--------------------------");
-        List<String> query1 = querys.Query1("2199023256013");
+        Map<String, Object> query1 = querys.Query1("32985348842640");
 
-        for (String people : query1) {
-            System.out.println(people);
-        }
+        Utils.MapPrinter<String, Object> pprinter = new Utils.MapPrinter<>(query1);
+        System.out.println(pprinter);
         System.out.println("--------------------------");
     }
 
