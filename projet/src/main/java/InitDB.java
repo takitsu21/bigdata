@@ -45,28 +45,28 @@ public class InitDB {
 
         initDB.start();
 
-        initDB.feedback();
-
-        initDB.brandByProduct();
-
-        initDB.product();
+//        initDB.feedback();
+//
+//        initDB.brandByProduct();
+//
+//        initDB.product();
 
         initDB.customer();
 
-        initDB.vendor();
-
-        initDB.order();
-
-
-        initDB.person_hasInterest();
-        initDB.person_knows();
-
-        initDB.invoice();
-        initDB.post();
-
-        initDB.post_hasCreator();
-
-        initDB.post_hasTag();
+//        initDB.vendor();
+//
+//        initDB.order();
+//
+//
+//        initDB.person_hasInterest();
+//        initDB.person_knows();
+//
+//        initDB.invoice();
+//        initDB.post();
+//
+//        initDB.post_hasCreator();
+//
+//        initDB.post_hasTag();
     }
 
 
@@ -142,24 +142,25 @@ public class InitDB {
         try (BufferedReader br =
                      new BufferedReader(new FileReader(file))) {
             br.readLine();
+            RList<String> customerList = redisson.getList("Customers", stringCodec);
+
             while ((line = br.readLine()) != null) {
 
                 String[] row = line.split("\\|");
-                RList<String> list = redisson.getList(row[0], stringCodec);
-
-                list.add(row[1]);
-                list.add(row[2]);
-                list.add(row[3]);
+                RMap<String, Object> customers = redisson.getMap(row[0], stringCodec);
                 Date birthday = new SimpleDateFormat("yyyy-MM-dd").parse(row[4]);
-                list.add(birthday.getTime() + "");
-
                 Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S").parse(row[5]);
 
-                list.add(creationDate.getTime() + "");
+                customers.fastPut("firstName", row[1]);
+                customers.fastPut("lastName", row[2]);
+                customers.fastPut("gender", row[3]);
+                customers.fastPut("birthday", Long.parseLong(String.valueOf(birthday.getTime())));
+                customers.fastPut("creationDate", Long.parseLong(String.valueOf(creationDate.getTime())));
+                customers.fastPut("locationIP", row[6]);
+                customers.fastPut("browserUsed", row[7]);
+                customers.fastPut("place", Float.parseFloat(row[8]));
+                customerList.add(row[0]);
 
-                list.add(row[6]);
-                list.add(row[7]);
-                list.add(row[8]);
 
             }
         } catch (Exception e) {
