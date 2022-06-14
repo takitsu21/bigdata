@@ -86,7 +86,6 @@ public class Querys {
             RMap<String, String> post = redisson.getMap(postId, codecString);
 
             Date creationDate = new Date(Long.parseLong(post.get("creationDate")));
-            System.out.println(creationDate);
             if (creationDate.after(lastMonth)) {
                 postsData.add(postId);
             }
