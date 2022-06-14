@@ -293,6 +293,44 @@ public class Querys {
     }
 
     /**
+     * Query 8. For all the products of a given category during a given year,
+     * compute its total sales amount, and measure its popularity in the social media.
+     */
+    public void Query8(String categorie, String date) throws ParseException {
+        double totalSales=0;
+
+        Date startDate = new SimpleDateFormat("dd/MM/yyyy").parse(date);
+        Calendar c = Calendar.getInstance();
+        c.setTime(startDate);
+        c.add(Calendar.YEAR, 1);
+        Date endDate = c.getTime();
+
+        RList<String> orders = redisson.getList("Orders", codecString);
+        for (String order : orders){
+
+            Date dateOrder = new SimpleDateFormat("yyyy-MM-dd").parse((String) redisson.getMap(order, codecString).get("OrderDate"));
+            double price = (double) redisson.getMap(order, codecDouble).get("TotalPrice");
+
+            RList<String> products = redisson.getList(order + "_Orderline", codecString);
+            for(String product : products){
+                RMap<String, String> map = redisson.getMap(product, codecString);
+                String brand = map.get("brand");
+                if (dateOrder.before(endDate) && dateOrder.after(startDate) && brand.equals(categorie)) {
+                    totalSales+=price;
+                }
+            }
+
+        }
+
+
+
+
+
+        System.out.println("total sales : "+totalSales);
+
+    }
+
+    /**
      * Query 9. Find top-3 companies who have the largest amount of sales at one
      * country, for each
      * company, compare the number of the male and female customers, and return the
