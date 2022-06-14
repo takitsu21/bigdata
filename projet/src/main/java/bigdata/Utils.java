@@ -95,4 +95,18 @@ public class Utils {
             return "\nrecency: " + recency + "\nfrequency: " + frequency + "\nmonetary: " + monetary + "\n";
         }
     }
+
+    public static Object getMaxFromMap(Map<?, Integer> map) {
+        int maxEntry = 0;
+        Object ret = null;
+        for (Map.Entry<?, Integer> entry : map.entrySet())
+        {
+            if (maxEntry < entry.getValue())
+            {
+                maxEntry = entry.getValue();
+                ret = entry.getKey();
+            }
+        }
+        return ret;
+    }
 }

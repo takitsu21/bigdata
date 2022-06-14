@@ -34,7 +34,7 @@ public class Main {
         maj.insert("B002NGNSOE","0000","4.0,Good");
         maj.update("B002NGNSOE","8491","4.0,Good");
         maj.delete("B002NGNSOE","21990232565835");
-
+        testQuery1();
         // testQuery2();
         // testQuery3();
         // testQuery4();
@@ -45,6 +45,16 @@ public class Main {
         //testQuery10();
 
         System.exit(0);
+    }
+
+    public static void testQuery1() {
+        System.out.println("Query n°1 :\n--------------------------");
+        List<String> query1 = querys.Query1("2199023256013");
+
+        for (String people : query1) {
+            System.out.println(people);
+        }
+        System.out.println("--------------------------");
     }
 
     public static void testQuery2() {

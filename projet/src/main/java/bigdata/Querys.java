@@ -25,6 +25,57 @@ public class Querys {
     }
 
     /**
+     *  Query 1. For a given customer, find his/her all related data including profile,
+     *  orders, invoices, feedback, comments, and posts in the last month, return the
+     *  category in which he/she has bought the largest number of products, and return
+     *  the tag which he/she has engaged the greatest times in the posts.
+     */
+    public List<String> Query1(String customerId) {
+        RList<String> orders = redisson.getList(String.format("%s_Orders", customerId),
+                codecString);
+        Map<String, Integer> productBought = new HashMap<>();
+        Map<String, Integer> tagUsed = new HashMap<>();
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        Date result = cal.getTime();
+
+        for (String orderId : orders) {
+            RList<String> products = redisson.getList(String.format("%s_Orderline", orderId), codecString);
+            for (String productId : products) {
+                RMap<String, String> product = redisson.getMap(productId, codecString);
+                String brand = product.get("brand");
+                if (!productBought.containsKey(brand)) {
+                    productBought.put(brand, 1);
+                }
+                 else {
+                     productBought.put(brand, productBought.get(brand) + 1);
+                }
+            }
+        }
+
+        RList<String> posts = redisson.getList(customerId + "_Posts", codecString);
+
+        for (String postId : posts) {
+            RList<String> tags = redisson.getList(postId + "_Tags", codecString);
+            for (String tag : tags) {
+                if (!tagUsed.containsKey(tag)) {
+                    tagUsed.put(tag, 1);
+                }
+                else {
+                    tagUsed.put(tag, tagUsed.get(tag) + 1);
+                }
+            }
+        }
+        String mostTagUsed = (String) Utils.getMaxFromMap(tagUsed);
+        String mostPopularIndustry = (String) Utils.getMaxFromMap(productBought);
+
+        System.out.println(mostPopularIndustry);
+        System.out.println(mostTagUsed);
+
+        return Collections.emptyList();
+    }
+
+    /**
      * Query 2:
      * For a given product during a given period, find the people who commented or
      * posted on it, and had bought it.

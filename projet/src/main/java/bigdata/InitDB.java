@@ -1,4 +1,5 @@
-import bigdata.Main;
+package bigdata;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.redisson.Redisson;
@@ -43,29 +44,18 @@ public class InitDB {
 
         InitDB initDB = new InitDB(redisson);
 
-        initDB.start();
-
+//        initDB.start();
 //        initDB.feedback();
-//
 //        initDB.brandByProduct();
-//
 //        initDB.product();
-
-        initDB.customer();
-
+//        initDB.customer();
 //        initDB.vendor();
-//
 //        initDB.order();
-//
-//
 //        initDB.person_hasInterest();
 //        initDB.person_knows();
-//
 //        initDB.invoice();
 //        initDB.post();
-//
 //        initDB.post_hasCreator();
-//
 //        initDB.post_hasTag();
     }
 
@@ -102,7 +92,7 @@ public class InitDB {
                      new BufferedReader(new FileReader(file))) {
             while ((line = br.readLine()) != null) {
                 String[] row = line.split(",");
-                RMap<String, String> map = redisson.getMap(row[1]);
+                RMap<String, String> map = redisson.getMap(row[1], stringCodec);
                 map.fastPut("brand", row[0]);
             }
         } catch (Exception e) {
