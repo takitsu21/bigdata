@@ -33,7 +33,13 @@ public class Main {
         Main.querys = new Querys(redisson);
         Main.maj = new Maj(redisson);
 
-        //Requetes
+        //MAJ (chapitre 4)
+        maj.insert("B002NGNSOE","0000","4.0,Good");
+        maj.update("B002NGNSOE","8491","4.0,Good");
+        maj.delete("B002NGNSOE","21990232565835");
+
+
+        //Requetes (chapitre 5)
         testQuery1();
         testQuery2();
         testQuery3();
@@ -45,10 +51,6 @@ public class Main {
         testQuery9();
         testQuery10();
 
-        //MAJ
-        //maj.insert("B002NGNSOE","0000","4.0,Good");
-        //maj.update("B002NGNSOE","8491","4.0,Good");
-        //maj.delete("B002NGNSOE","21990232565835");
 
         System.exit(0);
     }
