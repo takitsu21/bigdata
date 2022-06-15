@@ -309,9 +309,9 @@ public class Querys {
      * @param vendor
      * @return
      */
-    List<String> Query7(String vendor) {
+    Set<String> Query7(String vendor) {
         RList<String> products = redisson.getList("Products", codecString);
-        List<String> query = new ArrayList<>();
+        Set<String> query = new HashSet<>();
         for (String productId : products) {
             RMap<String, String> product = redisson.getMap(productId, codecString);
             List<String> clientsWithFeedBack = product.readAllKeySet().stream()
@@ -319,7 +319,7 @@ public class Querys {
             if (product.get("brand") != null && product.get("brand").equals(vendor)) {
                 for (String PersonId : clientsWithFeedBack) {
                     String[] splitReview = product.get(PersonId).split(",");
-                    float rate = Float.parseFloat(splitReview[0].replace("'", ""));
+                    float rate = Float.parseFloat(splitReview[0].replace("'", "").replace("\"", ""));
                     String review = String.join("", Arrays.copyOfRange(splitReview, 1, splitReview.length));
                     if (product.get("brand") != null
                             && product.get("brand").equals(vendor)

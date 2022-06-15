@@ -41,19 +41,19 @@ public class InitDB {
 
         InitDB initDB = new InitDB(redisson);
 
-        initDB.start();
-        initDB.feedback();
-        initDB.brandByProduct();
-        initDB.product();
-        initDB.customer();
-        initDB.vendor();
-        initDB.order();
-        initDB.person_hasInterest();
-        initDB.person_knows();
-        initDB.invoice();
-        initDB.post();
-        initDB.post_hasCreator();
-        initDB.post_hasTag();
+//        initDB.start();
+//        initDB.feedback();
+//        initDB.brandByProduct();
+//        initDB.product();
+//        initDB.customer();
+//        initDB.vendor();
+//        initDB.order();
+//        initDB.person_hasInterest();
+//        initDB.person_knows();
+//        initDB.invoice();
+//        initDB.post();
+//        initDB.post_hasCreator();
+//        initDB.post_hasTag();
         System.exit(0);
     }
 
@@ -107,12 +107,14 @@ public class InitDB {
         System.out.println("Product ...");
         try (BufferedReader br =
                      new BufferedReader(new FileReader(file))) {
+            RList<String> products = redisson.getList("Products", stringCodec);
             while ((line = br.readLine()) != null) {
                 String[] row = line.split(",");
                 RMap<String, String> map = redisson.getMap(row[0], stringCodec);
                 map.fastPut("title", row[1]);
                 map.fastPut("price", row[2]);
                 map.fastPut("imgUrl", row[3]);
+                products.add(row[0]);
             }
         } catch (Exception e) {
             System.out.println("Product issues");
