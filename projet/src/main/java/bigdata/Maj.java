@@ -1,6 +1,5 @@
 package bigdata;
 
-import org.redisson.api.RList;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.StringCodec;
@@ -26,7 +25,7 @@ public class Maj {
     }
 
     public void insert(String collection, String key, String value) {
-        HashMap<String, String> toInsert = new HashMap();
+        HashMap<String, String> toInsert = new HashMap<>();
         toInsert.put(key, value);
         insertMany(collection, toInsert);
     }
@@ -43,7 +42,7 @@ public class Maj {
     }
 
     public void update(String collection, String key, String newValue) {
-        HashMap<String, String> toInsert = new HashMap();
+        HashMap<String, String> toInsert = new HashMap<>();
         toInsert.put(key, newValue);
         updateMany(collection, toInsert);
     }
