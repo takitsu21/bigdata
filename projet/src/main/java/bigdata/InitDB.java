@@ -1,5 +1,4 @@
 package bigdata;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.redisson.Redisson;
@@ -44,19 +43,20 @@ public class InitDB {
 
         InitDB initDB = new InitDB(redisson);
 
-//        initDB.start();
-//        initDB.feedback();
-//        initDB.brandByProduct();
-//        initDB.product();
-//        initDB.customer();
-//        initDB.vendor();
-//        initDB.order();
-//        initDB.person_hasInterest();
-//        initDB.person_knows();
-//        initDB.invoice();
-//        initDB.post();
-//        initDB.post_hasCreator();
-//        initDB.post_hasTag();
+        //initDB.start();
+        //initDB.feedback();
+        //initDB.brandByProduct();
+        //initDB.product();
+        //initDB.customer();
+        //initDB.vendor();
+        //initDB.order();
+        //initDB.person_hasInterest();
+        //initDB.person_knows();
+        //initDB.invoice();
+        initDB.post();
+        //initDB.post_hasCreator();
+        //initDB.post_hasTag();
+        System.exit(0);
     }
 
 
@@ -66,7 +66,7 @@ public class InitDB {
     }
 
     public void feedback() {
-        String file = "../DATA/feedback/feedback.csv";
+        String file = "./DATA/Feedback/feedback.csv";
         String line;
         System.out.println("feedback ...");
         try (BufferedReader br =
@@ -85,7 +85,7 @@ public class InitDB {
     }
 
     public void brandByProduct() {
-        String file = "../DATA/Product/BrandByProduct.csv";
+        String file = "./DATA/Product/BrandByProduct.csv";
         String line;
         System.out.println("BrandByProduct ...");
         try (BufferedReader br =
@@ -104,7 +104,7 @@ public class InitDB {
     }
 
     public void product() {
-        String file = "../DATA/Product/Product.csv";
+        String file = "./DATA/Product/Product.csv";
         String line;
         System.out.println("Product ...");
         try (BufferedReader br =
@@ -125,7 +125,7 @@ public class InitDB {
     }
 
     public void customer() {
-        String file = "../DATA/Customer/person_0_0.csv";
+        String file = "./DATA/Customer/person_0_0.csv";
         String line;
         System.out.println("Customer ...");
 
@@ -161,7 +161,7 @@ public class InitDB {
     }
 
     public void vendor() {
-        String file = "../DATA/Vendor/Vendor.csv";
+        String file = "./DATA/Vendor/Vendor.csv";
         String line;
         System.out.println("Vendor ...");
         RList<String> vendors = redisson.getList("Vendors", stringCodec);
@@ -189,7 +189,7 @@ public class InitDB {
 
         System.out.println("Order ...");
         try {
-            String file = "../DATA/Order/Order.json";
+            String file = "./DATA/Order/Order.json";
             String line;
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
             RList<String> orders = redisson.getList("Orders", stringCodec);
@@ -224,7 +224,7 @@ public class InitDB {
 
         System.out.println("Invoice ...");
         try {
-            String file = "../DATA/Invoice/Invoice.xml";
+            String file = "./DATA/Invoice/Invoice.xml";
             String line;
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -270,7 +270,7 @@ public class InitDB {
 
 
     public void person_hasInterest() {
-        String file = "../DATA/SocialNetwork/person_hasInterest_tag_0_0.csv";
+        String file = "./DATA/SocialNetwork/person_hasInterest_tag_0_0.csv";
         String line;
         System.out.println("person_hasInterest ...");
 
@@ -290,7 +290,7 @@ public class InitDB {
     }
 
     public void person_knows() {
-        String file = "../DATA/SocialNetwork/person_knows_person_0_0.csv";
+        String file = "./DATA/SocialNetwork/person_knows_person_0_0.csv";
         String line;
         System.out.println("person_knows ...");
 
@@ -310,12 +310,13 @@ public class InitDB {
     }
 
     public void post() {
-        String file = "../DATA/SocialNetwork/post_0_0.csv";
+        String file = "./DATA/SocialNetwork/post_0_0.csv";
         String line;
         System.out.println("post ...");
         try (BufferedReader br =
                      new BufferedReader(new FileReader(file))) {
-            RList<String> posts = redisson.getList("Posts");
+            RList<String> posts = redisson.getList("Posts",stringCodec);
+
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] row = line.split("\\|");
@@ -339,7 +340,7 @@ public class InitDB {
     }
 
     public void post_hasCreator() {
-        String file = "../DATA/SocialNetwork/post_hasCreator_person_0_0.csv";
+        String file = "./DATA/SocialNetwork/post_hasCreator_person_0_0.csv";
         String line;
         System.out.println("post_hasCreator ...");
 
@@ -362,7 +363,7 @@ public class InitDB {
     }
 
     public void post_hasTag() {
-        String file = "../DATA/SocialNetwork/post_hasTag_tag_0_0.csv";
+        String file = "./DATA/SocialNetwork/post_hasTag_tag_0_0.csv";
         String line;
         System.out.println("post_hasTag ...");
 

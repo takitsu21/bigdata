@@ -33,15 +33,15 @@ public class Main {
 
         //Requetes
         //testQuery1();
-        // testQuery2();
-        // testQuery3();
+        //testQuery2();
+        //testQuery3();
         // testQuery4();
-        // testQuery5();
-        // testQuery6();
-        // testQuery7();
+         //testQuery5();
+         //testQuery6();
+         //testQuery7();
         testQuery8();
-        // testQuery9();
-        //testQuery10();
+         //testQuery9();
+         //testQuery10();
 
         //MAJ
         //maj.insert("B002NGNSOE","0000","4.0,Good");

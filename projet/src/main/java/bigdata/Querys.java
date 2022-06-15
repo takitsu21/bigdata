@@ -25,10 +25,10 @@ public class Querys {
     }
 
     /**
-     *  Query 1. For a given customer, find his/her all related data including profile,
-     *  orders, invoices, feedback, comments, and posts in the last month, return the
-     *  category in which he/she has bought the largest number of products, and return
-     *  the tag which he/she has engaged the greatest times in the posts.
+     * Query 1. For a given customer, find his/her all related data including profile,
+     * orders, invoices, feedback, comments, and posts in the last month, return the
+     * category in which he/she has bought the largest number of products, and return
+     * the tag which he/she has engaged the greatest times in the posts.
      */
     public List<String> Query1(String customerId) {
         RList<String> orders = redisson.getList(String.format("%s_Orders", customerId),
@@ -46,9 +46,8 @@ public class Querys {
                 String brand = product.get("brand");
                 if (!productBought.containsKey(brand)) {
                     productBought.put(brand, 1);
-                }
-                 else {
-                     productBought.put(brand, productBought.get(brand) + 1);
+                } else {
+                    productBought.put(brand, productBought.get(brand) + 1);
                 }
             }
         }
@@ -60,8 +59,7 @@ public class Querys {
             for (String tag : tags) {
                 if (!tagUsed.containsKey(tag)) {
                     tagUsed.put(tag, 1);
-                }
-                else {
+                } else {
                     tagUsed.put(tag, tagUsed.get(tag) + 1);
                 }
             }
@@ -223,10 +221,12 @@ public class Querys {
                 if (redisson.getMap(orderAsin, codecString).get("brand").equals(productCategorie)) {
                     String feedbackWithNote = (String) redisson.getMap(orderAsin, codecString).get(personId);
                     if (feedbackWithNote != null) {
-                        double note = Double.parseDouble(feedbackWithNote.substring(1, 4));
-                        String feedback = feedbackWithNote.substring(5);
-                        if (note == 5.)
+                        if (feedbackWithNote.startsWith("'5.", 1) || feedbackWithNote.startsWith("5.", 1)) {
+                            String feedback = feedbackWithNote.substring(5);
                             allFeedback.add(feedback);
+                        }
+
+
                     }
                 }
             }
@@ -297,7 +297,8 @@ public class Querys {
      * compute its total sales amount, and measure its popularity in the social media.
      */
     public void Query8(String categorie, String date) throws ParseException {
-        double totalSales=0;
+        double totalSales = 0;
+        Set<String> allNames = new HashSet<>();
 
         Date startDate = new SimpleDateFormat("dd/MM/yyyy").parse(date);
         Calendar c = Calendar.getInstance();
@@ -306,27 +307,46 @@ public class Querys {
         Date endDate = c.getTime();
 
         RList<String> orders = redisson.getList("Orders", codecString);
-        for (String order : orders){
+        for (String order : orders) {
 
             Date dateOrder = new SimpleDateFormat("yyyy-MM-dd").parse((String) redisson.getMap(order, codecString).get("OrderDate"));
             double price = (double) redisson.getMap(order, codecDouble).get("TotalPrice");
 
             RList<String> products = redisson.getList(order + "_Orderline", codecString);
-            for(String product : products){
+            for (String product : products) {
                 RMap<String, String> map = redisson.getMap(product, codecString);
+
                 String brand = map.get("brand");
                 if (dateOrder.before(endDate) && dateOrder.after(startDate) && brand.equals(categorie)) {
-                    totalSales+=price;
+                    totalSales += price;
+                    if (map.get("title") != null) allNames.add(map.get("title"));
                 }
             }
 
         }
+        RList<String> posts = redisson.getList("Posts", codecString);
+        int nbrPostDuringYear = 0;
+        int nbrPostWithThisCategorie = 0;
+        for (String postId : posts) {
+            if (postId.startsWith(">", 1)) {
+                String feedback = postId.substring(3);
+                nbrPostDuringYear += 1;
+                String content = (String) redisson.getMap(feedback, codecString).get("content");
+                for (String name : allNames) {
+                    if (content.toUpperCase().contains(name.toUpperCase())) {
+                        nbrPostWithThisCategorie += 1;
+                        break;
+                    }
+                }
 
 
+            }
+
+        }
+        System.out.println("% de popularité : " + (nbrPostWithThisCategorie / nbrPostDuringYear) * 100);
 
 
-
-        System.out.println("total sales : "+totalSales);
+        System.out.println("total sales : " + totalSales);
 
     }
 
