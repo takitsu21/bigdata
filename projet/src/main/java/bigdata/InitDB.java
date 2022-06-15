@@ -41,19 +41,19 @@ public class InitDB {
 
         InitDB initDB = new InitDB(redisson);
 
-//        initDB.start();
-//        initDB.feedback();
-//        initDB.brandByProduct();
-//        initDB.product();
-//        initDB.customer();
-//        initDB.vendor();
-//        initDB.order();
-//        initDB.person_hasInterest();
-//        initDB.person_knows();
-//        initDB.invoice();
-//        initDB.post();
-//        initDB.post_hasCreator();
-//        initDB.post_hasTag();
+        initDB.start();
+        initDB.feedback();
+        initDB.brandByProduct();
+        initDB.product();
+        initDB.customer();
+        initDB.vendor();
+        initDB.order();
+        initDB.person_hasInterest();
+        initDB.person_knows();
+        initDB.invoice();
+        initDB.post();
+        initDB.post_hasCreator();
+        initDB.post_hasTag();
         System.exit(0);
     }
 
