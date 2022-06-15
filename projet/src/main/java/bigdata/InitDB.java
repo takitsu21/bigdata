@@ -14,10 +14,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -35,6 +32,7 @@ public class InitDB {
         Config config = null;
         try {
             config = Config.fromYAML(Main.class.getClassLoader().getResource("redis-config.yml"));
+            config.setCodec(new StringCodec());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -43,19 +41,19 @@ public class InitDB {
 
         InitDB initDB = new InitDB(redisson);
 
-        //initDB.start();
-        //initDB.feedback();
-        //initDB.brandByProduct();
-        //initDB.product();
-        //initDB.customer();
-        //initDB.vendor();
-        //initDB.order();
-        //initDB.person_hasInterest();
-        //initDB.person_knows();
-        //initDB.invoice();
+        initDB.start();
+        initDB.feedback();
+        initDB.brandByProduct();
+        initDB.product();
+        initDB.customer();
+        initDB.vendor();
+        initDB.order();
+        initDB.person_hasInterest();
+        initDB.person_knows();
+        initDB.invoice();
         initDB.post();
-        //initDB.post_hasCreator();
-        //initDB.post_hasTag();
+        initDB.post_hasCreator();
+        initDB.post_hasTag();
         System.exit(0);
     }
 

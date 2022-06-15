@@ -80,7 +80,7 @@ public class Utils {
         int recency = 0;
         int frequency = 0;
         int monetary = 0;
-        Set<String> tags = new HashSet<>();
+        public final Set<String> tags = new HashSet<>();
         Set<String> reviews = new HashSet<>();
 
         @Override

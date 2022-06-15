@@ -156,9 +156,9 @@ public class Querys {
      * @return
      * @throws ParseException
      */
-    public List<String> Query3(String ProductId, String before, String after)
+    public Set<String> Query3(String ProductId, String before, String after)
             throws ParseException {
-        List<String> query = new ArrayList<>();
+        Set<String> query = new HashSet<>();
         Date beforeDate = new SimpleDateFormat("dd/MM/yyyy").parse(before);
         Date afterDate = new SimpleDateFormat("dd/MM/yyyy").parse(after);
 
@@ -170,7 +170,13 @@ public class Querys {
         for (String PersonId : clientsWithFeedBack) {
             RList<String> posts = redisson.getList(PersonId + "_Posts", codecString);
             String[] splitReview = map.get(PersonId).split(",");
-            float rate = Float.parseFloat(splitReview[0].replace("'", ""));
+//            System.out.println(Arrays.toString(splitReview));
+            double rate = 0.0;
+            try {
+                rate = Double.parseDouble(splitReview[0].replace("'", "").replace("\"", ""));
+            } catch (Exception e) {
+                continue;
+            }
             String review = String.join("", Arrays.copyOfRange(splitReview, 1, splitReview.length));
 
             for (String postID : posts) {
@@ -453,14 +459,19 @@ public class Querys {
         long lastWeek = LocalDate.now().minusWeeks(1).toEpochDay() * 24 * 60 * 60;
         RList<String> posts = redisson.getList("Posts", codecString);
         for (String postId : posts) {
+
             RMap<String, String> map = redisson.getMap(postId, codecString);
+
             double date = Double.parseDouble(map.get("creationDate"));
             if (date > lastYear) {
                 String creator = map.get("creator");
+
                 RList<String> tags = redisson.getList(postId + "_Tags", codecString);
                 RFM rfm = persons.get(creator);
+
                 if (rfm == null) {
                     persons.put(creator, new RFM());
+                    rfm = persons.get(creator);
                 }
                 rfm.tags.addAll(tags);
                 rfm.frequency++;
