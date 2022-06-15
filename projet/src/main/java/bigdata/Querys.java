@@ -25,37 +25,70 @@ public class Querys {
     }
 
     /**
-     * Query 1. For a given customer, find his/her all related data including profile,
-     * orders, invoices, feedback, comments, and posts in the last month, return the
-     * category in which he/she has bought the largest number of products, and return
-     * the tag which he/she has engaged the greatest times in the posts.
+     *  Query 1. For a given customer, find his/her all related data including profile,
+     *  orders, invoices, feedback, comments, and posts in the last month, return the
+     *  category in which he/she has bought the largest number of products, and return
+     *  the tag which he/she has engaged the greatest times in the posts.
+     *
+     * @param customerId Customer ID
      */
-    public List<String> Query1(String customerId) {
+    public Map<String, Object> Query1(String customerId) {
+        Map<String, Object> data = new HashMap<>();
+        RMap<String, String> profile = redisson.getMap(customerId, codecString);
+        data.put("profile", Map.of(
+                "firstName", profile.get("firstName"),
+                "lastName", profile.get("lastName"),
+                "gender", profile.get("gender"),
+                "birthday", new Date(Long.parseLong(profile.get("birthday"))),
+                "creationDate", new Date(Long.parseLong(profile.get("creationDate"))),
+                "locationIP", profile.get("locationIP"),
+                "browserUsed", profile.get("browserUsed"),
+                "place", profile.get("place")
+        ));
+        List<String> ordersData = new ArrayList<>();
+        List<String> postsData = new ArrayList<>();
+
         RList<String> orders = redisson.getList(String.format("%s_Orders", customerId),
                 codecString);
         Map<String, Integer> productBought = new HashMap<>();
         Map<String, Integer> tagUsed = new HashMap<>();
+
+
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MONTH, -1);
-        Date result = cal.getTime();
-
-        for (String orderId : orders) {
-            RList<String> products = redisson.getList(String.format("%s_Orderline", orderId), codecString);
-            for (String productId : products) {
-                RMap<String, String> product = redisson.getMap(productId, codecString);
-                String brand = product.get("brand");
-                if (!productBought.containsKey(brand)) {
-                    productBought.put(brand, 1);
-                } else {
-                    productBought.put(brand, productBought.get(brand) + 1);
+        Date lastMonth = cal.getTime();
+        try {
+            for (String orderId : orders) {
+                RMap<String, String> order = redisson.getMap(orderId, codecString);
+                Date orderDate = new SimpleDateFormat("yyyy-MM-dd").parse(order.get("OrderDate"));
+                if (orderDate.after(lastMonth)) {
+                    ordersData.add(orderId);
+                }
+                RList<String> products = redisson.getList(String.format("%s_Orderline", orderId), codecString);
+                for (String productId : products) {
+                    RMap<String, String> product = redisson.getMap(productId, codecString);
+                    String brand = product.get("brand");
+                    if (!productBought.containsKey(brand)) {
+                        productBought.put(brand, 1);
+                    } else {
+                        productBought.put(brand, productBought.get(brand) + 1);
+                    }
                 }
             }
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
 
         RList<String> posts = redisson.getList(customerId + "_Posts", codecString);
 
         for (String postId : posts) {
             RList<String> tags = redisson.getList(postId + "_Tags", codecString);
+            RMap<String, String> post = redisson.getMap(postId, codecString);
+
+            Date creationDate = new Date(Long.parseLong(post.get("creationDate")));
+            if (creationDate.after(lastMonth)) {
+                postsData.add(postId);
+            }
             for (String tag : tags) {
                 if (!tagUsed.containsKey(tag)) {
                     tagUsed.put(tag, 1);
@@ -67,10 +100,11 @@ public class Querys {
         String mostTagUsed = (String) Utils.getMaxFromMap(tagUsed);
         String mostPopularIndustry = (String) Utils.getMaxFromMap(productBought);
 
-        System.out.println(mostPopularIndustry);
-        System.out.println(mostTagUsed);
-
-        return Collections.emptyList();
+        data.put("orders", ordersData);
+        data.put("posts", postsData);
+        data.put("mostTagIdUsed", mostTagUsed);
+        data.put("mostPopularIndustry", mostPopularIndustry);
+        return data;
     }
 
     /**
