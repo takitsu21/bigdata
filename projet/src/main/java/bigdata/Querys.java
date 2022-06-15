@@ -364,29 +364,27 @@ public class Querys {
             }
 
         }
-        RList<String> posts = redisson.getList("Posts", codecString);
-        int nbrPostDuringYear = 0;
+
+        System.out.println("total sales : " + totalSales);
+        System.out.println("calcul de la popularité ... ca va être long vous pouvez aller prendre un café");
+
+        RList<String> posts = redisson.getList("Posts",codecString);
         int nbrPostWithThisCategorie = 0;
+
         for (String postId : posts) {
-            if (postId.startsWith(">", 1)) {
-                String feedback = postId.substring(3);
-                nbrPostDuringYear += 1;
-                String content = (String) redisson.getMap(feedback, codecString).get("content");
-                for (String name : allNames) {
-                    if (content.toUpperCase().contains(name.toUpperCase())) {
-                        nbrPostWithThisCategorie += 1;
-                        break;
-                    }
+            postId = !postId.replace(">","").equals("") ? postId.replace(">","").trim() : postId.trim();
+            String content = (String) redisson.getMap(postId, codecString).get("content");
+            for (String name : allNames) {
+
+                if (content.toUpperCase().contains(name.toUpperCase())) {
+                    nbrPostWithThisCategorie += 1;
+                    break;
                 }
-
-
             }
 
         }
-        System.out.println("% de popularité : " + (nbrPostWithThisCategorie / nbrPostDuringYear) * 100);
+        System.out.println(nbrPostWithThisCategorie+" posts concernent la catégorie sur un total de "+posts.size()+ " posts");
 
-
-        System.out.println("total sales : " + totalSales);
 
     }
 

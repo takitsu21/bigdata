@@ -135,7 +135,6 @@ public class Main {
         try {
             System.out.println("Query n°8 :\n--------------------------");
             querys.Query8("Nomis", "01/08/2020");
-
             System.out.println("--------------------------");
         } catch (ParseException e) {
             e.printStackTrace();

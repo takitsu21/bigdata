@@ -318,7 +318,7 @@ public class InitDB {
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] row = line.split("\\|");
-                RMap<String, String> map = redisson.getMap(row[0], stringCodec);
+                RMap<String, String> map = redisson.getMap(row[0]);
                 map.fastPut("imageFile", row[1]);
 
                 Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S").parse(row[2]);
